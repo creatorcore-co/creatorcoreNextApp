@@ -142,24 +142,8 @@ Next steps:
   4. Run "npm run build:interfaces" to build all interfaces
   5. Your bundle will be at public/bundles/${kebabName}.js
 
-Usage in Bubble:
-  <div id="${kebabName}-container"></div>
-  <script src="https://your-domain.com/bundles/${kebabName}.js"></script>
-  <script>
-    window.${pascalName}.mount(
-      document.getElementById('${kebabName}-container'),
-      {
-        props: { /* your props */ },
-        services: bubbleServices,
-        nextApiBase: 'https://your-domain.com',
-        bubbleAppName: 'your-app',
-        isAuthenticated: false,
-        debug: false
-      }
-    );
-  </script>
-
-Events will be emitted as: ${kebabName}:ready, ${kebabName}:action, etc.
+Bundle URL:
+  https://creatorcore-next-app.vercel.app/bundles/${kebabName}.js
 `);
 } catch (error) {
   console.error('\nError creating interface:', error.message);

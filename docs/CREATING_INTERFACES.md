@@ -1,6 +1,6 @@
 # Creating New Interfaces
 
-This guide walks you through creating new interfaces step-by-step, prompting AI agents to build them, and deploying to Vercel.
+This guide walks you through creating new interfaces step-by-step, using AI agents to build them, and deploying to Vercel.
 
 ## Overview
 
@@ -25,118 +25,187 @@ This scaffolds a new interface in `src/interfaces/my-dashboard/` with these file
 | File | Purpose |
 |------|---------|
 | `index.tsx` | Entry point - handles mounting, Shadow DOM, event system (don't modify) |
-| `Component.tsx` | Your main UI component (build your interface here) |
-| `styles.ts` | CSS styles injected into Shadow DOM |
-| `types.ts` | TypeScript type definitions |
+| `Component.tsx` | Your main UI component (AI agent builds this) |
+| `styles.ts` | CSS styles injected into Shadow DOM (AI agent builds this) |
+| `types.ts` | TypeScript type definitions (AI agent can extend this) |
 | `package.json` | Interface metadata |
 
 ---
 
-## Step 2: Build Your Interface UI
+## Step 2: Prompt AI Agent to Build the Interface
 
-Edit `src/interfaces/my-dashboard/Component.tsx`:
+### Files to Edit
 
-```tsx
-'use client';
+The AI agent will work on these files:
+- **`src/interfaces/my-dashboard/Component.tsx`** - Main UI component
+- **`src/interfaces/my-dashboard/styles.ts`** - CSS-in-JS styles
 
-import { useState } from 'react';
-import type { MyDashboardConfig } from './types';
+### Before You Prompt: Prepare Your Requirements
 
-interface MyDashboardComponentProps {
-  config: MyDashboardConfig;
-  onEmit: (event: string, payload?: Record<string, unknown>) => void;
-}
+#### 1. Design the UI
+- Create a Figma design, wireframe, or detailed UI description
+- If using Figma, ensure your agent has access to Figma MCP for automatic design conversion
+- Specify theme requirements (light/dark mode support)
+- Define responsive behavior and mode variants (compact/full/embedded)
 
-export function MyDashboardComponent({ config, onEmit }: MyDashboardComponentProps) {
-  const { props, services, isAuthenticated, debug } = config;
-  const [loading, setLoading] = useState(false);
+#### 2. Set Up Data Sources in Bubble
 
-  const handleAction = async () => {
-    setLoading(true);
-    try {
-      const result = await services.callNextApi('/api/my-endpoint', {
-        method: 'POST',
-        body: JSON.stringify({ userId: props.user?.id })
-      });
-      onEmit('action-complete', { result });
-    } catch (error) {
-      onEmit('error', { message: (error as Error).message });
-    } finally {
-      setLoading(false);
-    }
-  };
+For each group of data your interface needs, create a **Bubble backend workflow**:
 
-  return (
-    <div className={`my-dashboard-container ${props.theme || 'light'}`}>
-      <h2>Welcome, {props.user?.name}</h2>
-      <button onClick={handleAction} disabled={loading}>
-        {loading ? 'Loading...' : 'Take Action'}
-      </button>
-    </div>
-  );
-}
+**Example workflow setup:**
+- **Workflow name**: `get_user_dashboard_data`
+- **Purpose**: Fetch user stats, recent activity, notifications
+- **Response format**:
+  ```json
+  {
+    "stats": {
+      "totalViews": 1234,
+      "totalPosts": 56,
+      "followers": 789
+    },
+    "recentActivity": [
+      { "id": "1", "type": "post", "title": "...", "date": "2024-01-15" }
+    ],
+    "notifications": { "unread": 5 }
+  }
+  ```
+
+**Document each workflow:**
+- Workflow name (exact match)
+- What data it returns
+- Expected parameters (if any)
+- Response structure
+
+#### 3. Identify Event Requirements
+
+List all events your interface should emit to Bubble:
+- When should they fire?
+- What payload data should they include?
+- How will Bubble respond to these events?
+
+### Prompting the AI Agent
+
+#### 1. Open Your AI Agent
+
+Open your AI coding agent (Claude Code, Cursor, etc.)
+
+#### 2. Provide the AI Agent Guide
+
+Share the AI Agent Guide with your agent:
+```
+Please read @docs/AI_AGENT_GUIDE.md - this contains all the architectural
+patterns and requirements for building interfaces in this repository.
+```
+
+#### 3. Structure Your Prompt
+
+Include these elements in your prompt:
+
+**A. Interface Purpose**
+```
+Build a user dashboard interface called "my-dashboard" that displays:
+- User stats (views, posts, followers)
+- Recent activity feed
+- Notification count
+```
+
+**B. UI Design**
+```
+Design requirements:
+- Modern card-based layout with subtle shadows
+- Header with user avatar and name
+- 3-column stats grid
+- Activity feed with infinite scroll
+- Notification bell icon in header
+- Support light and dark themes
+- Responsive: stack columns on mobile
+
+[Attach Figma file or design screenshot]
+```
+
+**C. Data Sources**
+```
+Backend workflows in Bubble:
+1. get_user_dashboard_data
+   - Returns: { stats: {...}, recentActivity: [...], notifications: {...} }
+   - Called on mount
+
+2. load_more_activity
+   - Parameters: { offset: number }
+   - Returns: { activities: [...], hasMore: boolean }
+   - Called on scroll
+```
+
+**D. Events to Emit**
+```
+Events:
+- 'dashboard-loaded' - when data is fetched (payload: { stats })
+- 'activity-clicked' - when user clicks activity item (payload: { activityId })
+- 'refresh-requested' - when user clicks refresh button (payload: {})
+- 'error' - on any error (payload: { message, operation })
+```
+
+**E. Styling Requirements**
+```
+Style guidelines:
+- Use gradient accent colors: #6366f1 to #8b5cf6
+- Card border-radius: 12px
+- Smooth transitions on hover (200ms)
+- Status indicators: green for active, yellow for pending
+- Dark mode: #1f2937 background, #374151 cards
+```
+
+### Full Example Prompt
+
+```
+Read @docs/AI_AGENT_GUIDE.md for the architecture and patterns.
+
+Create a "user-dashboard" interface with these requirements:
+
+UI DESIGN:
+- Modern card-based dashboard layout
+- Header with user avatar, name, and notification bell
+- 3-column stats grid (total views, posts, followers)
+- Activity feed with infinite scroll
+- Support light/dark themes and compact/full modes
+[Attached: dashboard-design.fig]
+
+DATA SOURCES:
+1. Bubble workflow: get_user_dashboard_data
+   Response: {
+     stats: { totalViews: number, totalPosts: number, followers: number },
+     recentActivity: Array<{ id: string, type: string, title: string, date: string }>,
+     notifications: { unread: number }
+   }
+   Call on component mount
+
+2. Bubble workflow: load_more_activity
+   Parameters: { offset: number }
+   Response: { activities: Array<...>, hasMore: boolean }
+   Call on scroll to bottom
+
+EVENTS TO EMIT:
+- 'dashboard-loaded' with { stats } - after data loads
+- 'activity-clicked' with { activityId, activityType } - on activity click
+- 'notification-bell-clicked' with { unreadCount } - on bell click
+- 'refresh-requested' with {} - on refresh button click
+- 'error' with { message, operation } - on any error
+
+STYLING:
+- Gradient buttons: #6366f1 to #8b5cf6
+- Border radius: 12px
+- Smooth hover transitions (200ms)
+- Dark mode: #1f2937 bg, #374151 cards, #f9fafb text
+- Light mode: #ffffff bg, #f9fafb cards, #1f2937 text
+
+The interface should handle loading states, empty states, and error states gracefully.
 ```
 
 ---
 
-## Step 3: Add Custom Styles
+## Step 3: Build the Interface Bundle
 
-Edit `src/interfaces/my-dashboard/styles.ts`:
-
-```ts
-export const MyDashboardStyles = `
-/* Container */
-.my-dashboard-container {
-  padding: 24px;
-  border-radius: 12px;
-  font-family: system-ui, -apple-system, sans-serif;
-}
-
-/* Light theme (default) */
-.my-dashboard-container.light {
-  background: #ffffff;
-  color: #1f2937;
-}
-
-/* Dark theme */
-.my-dashboard-container.dark {
-  background: #1f2937;
-  color: #f9fafb;
-}
-
-/* Typography */
-.my-dashboard-container h2 {
-  margin: 0 0 16px 0;
-  font-size: 1.5rem;
-}
-
-/* Buttons */
-.my-dashboard-container button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  background: #3b82f6;
-  color: white;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.my-dashboard-container button:hover {
-  background: #2563eb;
-}
-
-.my-dashboard-container button:disabled {
-  background: #9ca3af;
-  cursor: not-allowed;
-}
-`;
-```
-
----
-
-## Step 4: Build the Interface Bundle
-
-Build all interfaces:
+Once the AI agent has completed the interface, build all interfaces:
 
 ```bash
 npm run build:interfaces
@@ -152,7 +221,7 @@ npm run build:all
 
 ---
 
-## Step 5: Deploy to Vercel
+## Step 4: Deploy to Vercel
 
 1. **Commit and push your changes:**
    ```bash
@@ -168,232 +237,179 @@ npm run build:all
 
 3. **Access your interface at:**
    ```
-   https://your-app.vercel.app/bundles/my-dashboard.js
+   https://creatorcore-next-app.vercel.app/bundles/my-dashboard.js
    ```
 
 ---
 
-## Step 6: Use in Bubble.io
+## Step 5: Use in Bubble.io
 
-Load and mount your interface in Bubble:
+Add your interface to Bubble using the plugin element. Configure with these values:
 
-```html
-<div id="my-dashboard-container"></div>
-<script src="https://your-app.vercel.app/bundles/my-dashboard.js"></script>
-<script>
-  const dashboard = window.MyDashboard.mount(
-    document.getElementById('my-dashboard-container'),
-    {
-      props: {
-        user: { id: 'user123', name: 'John', email: 'john@example.com' },
-        theme: 'light',
-        mode: 'embedded'
-      },
-      services: {
-        callBubbleWorkflow: async (name, params) => { /* ... */ },
-        callBubbleDataApi: async (endpoint, options) => { /* ... */ },
-        callNextApi: async (endpoint, options) => { /* ... */ },
-        emitEvent: (name, payload) => { /* ... */ },
-        getNextToken: () => localStorage.getItem('nextAccessToken'),
-        isAuthenticated: () => !!localStorage.getItem('nextAccessToken')
-      },
-      nextApiBase: 'https://your-app.vercel.app',
-      bubbleAppName: 'your-bubble-app',
-      isAuthenticated: true,
-      debug: false
-    }
-  );
+### Plugin Configuration
 
-  // Listen for events
-  document.addEventListener('my-dashboard:action-complete', (e) => {
-    console.log('Action completed:', e.detail);
-  });
-</script>
+| Field | Value | Description |
+|-------|-------|-------------|
+| **bundle_url** | `https://creatorcore-next-app.vercel.app/bundles/my-dashboard.js` | URL to your interface bundle |
+| **next_api_base** | `https://creatorcore-next-app.vercel.app` | Base URL for Next.js API routes |
+| **bubble_app_name** | `creatorcore` | Your Bubble app name |
+| **props_json** | `{"user": {"id": "...", "name": "..."}, "theme": "light", "mode": "embedded"}` | Props to pass to the interface (JSON string) |
+
+### Example props_json Values
+
+**Minimal:**
+```json
+{
+  "theme": "light",
+  "mode": "embedded"
+}
+```
+
+**With user data:**
+```json
+{
+  "user": {
+    "id": "user123",
+    "name": "John Doe",
+    "email": "john@example.com"
+  },
+  "theme": "dark",
+  "mode": "full"
+}
+```
+
+**With custom data:**
+```json
+{
+  "user": {"id": "user123", "name": "John"},
+  "theme": "light",
+  "mode": "embedded",
+  "customData": {
+    "organizationId": "org456",
+    "permissions": ["read", "write"],
+    "settings": {"notifications": true}
+  }
+}
+```
+
+### Listening for Events in Bubble
+
+The interface will emit events that you can listen for in Bubble workflows. Event names follow the format: `{interface-name}:{event-name}`
+
+**Examples for my-dashboard:**
+- `my-dashboard:dashboard-loaded`
+- `my-dashboard:activity-clicked`
+- `my-dashboard:refresh-requested`
+- `my-dashboard:error`
+
+---
+
+## Additional Prompting Examples
+
+### Simple Display Widget
+
+```
+Read @docs/AI_AGENT_GUIDE.md
+
+Create a "notification-bell" interface:
+
+UI:
+- Bell icon with unread count badge
+- Dropdown list of notifications on click
+- Compact mode (icon only) and full mode (with label)
+
+DATA:
+Bubble workflow: get_user_notifications
+Response: { notifications: Array<{ id, title, message, read, date }>, unreadCount: number }
+
+EVENTS:
+- 'notification-clicked' with { notificationId }
+- 'mark-as-read' with { notificationId }
+
+STYLING:
+- Bell icon: 24px, subtle animation on new notification
+- Badge: red circle with white number
+- Dropdown: white card with shadow, max 5 visible items
+```
+
+### Complex Form Interface
+
+```
+Read @docs/AI_AGENT_GUIDE.md
+
+Create a "checkout-form" interface:
+
+UI:
+- Multi-step form (shipping, payment, review)
+- Progress indicator showing current step
+- Form validation with inline errors
+- Support for saved payment methods
+
+DATA:
+1. Bubble workflow: get_saved_addresses
+   Response: { addresses: Array<{ id, street, city, state, zip }> }
+
+2. Bubble workflow: validate_address
+   Parameters: { street, city, state, zip }
+   Response: { valid: boolean, suggestions?: Array<...> }
+
+3. Bubble workflow: process_payment
+   Parameters: { amount, paymentMethod, shippingAddress }
+   Response: { success: boolean, orderId?: string, error?: string }
+
+EVENTS:
+- 'step-changed' with { step: number, totalSteps: number }
+- 'order-submitted' with { orderId, amount }
+- 'payment-error' with { message }
+
+[Attached: checkout-flow.fig]
 ```
 
 ---
 
-## Prompting an AI Agent to Build Interfaces
-
-When working with an AI coding agent (like Claude Code), use these prompts:
-
-### Creating a New Interface
-
-```
-Create a new interface called "user-profile" that displays user information
-and allows editing. It should:
-- Show user avatar, name, and email
-- Have an edit mode with form inputs
-- Support light and dark themes
-- Emit 'profile-updated' event when saved
-- Call /api/profile endpoint to save changes
-```
-
-### Key Details to Include in Your Prompt
-
-1. **Interface name** (kebab-case): `user-profile`, `payment-form`, `data-table`
-
-2. **UI requirements:**
-   - What components to display
-   - Layout and styling needs
-   - Theme support (light/dark)
-   - Responsive behavior
-
-3. **Data interactions:**
-   - Which API endpoints to call
-   - What data to send/receive
-   - Loading and error states
-
-4. **Events to emit:**
-   - What events Bubble should listen for
-   - Event payload structure
-
-5. **Props expected from Bubble:**
-   - User info
-   - Custom data
-   - Configuration options
-
-### Example Prompts
-
-**Simple display widget:**
-```
-Create a "notification-bell" interface that:
-- Shows a bell icon with unread count badge
-- Fetches notifications from /api/notifications
-- Displays dropdown list when clicked
-- Emits 'notification-clicked' with notification ID
-- Supports compact and full modes
-```
-
-**Complex form interface:**
-```
-Create a "checkout-form" interface with:
-- Multi-step form (shipping, payment, review)
-- Form validation with error messages
-- Integration with /api/validate-address and /api/process-payment
-- Progress indicator showing current step
-- Emit events: 'step-changed', 'order-submitted', 'payment-error'
-- Support for saved payment methods from props.customData.savedCards
-```
-
-**Data table interface:**
-```
-Create a "data-grid" interface that:
-- Displays tabular data with sortable columns
-- Supports pagination (10, 25, 50 per page)
-- Has search/filter functionality
-- Allows row selection (single and multi)
-- Emits 'row-selected', 'sort-changed', 'filter-applied'
-- Gets data schema from props.customData.columns
-```
-
-### Tips for Better AI Results
+## Tips for Better AI Results
 
 1. **Be specific about styling:**
-   ```
-   Use a modern card-based design with subtle shadows,
-   rounded corners (12px), and smooth transitions
-   ```
+   - Provide exact colors, spacing, border-radius values
+   - Specify animations and transitions
+   - Include both light and dark mode requirements
 
-2. **Define the data structure:**
-   ```
-   The user object has: id, name, email, avatar (url), role, createdAt
-   ```
+2. **Document data structures completely:**
+   - Show exact JSON response formats
+   - Include all fields with their types
+   - Note optional vs required fields
 
-3. **Specify error handling:**
-   ```
-   Show inline error messages below form fields,
-   display toast for API errors
-   ```
+3. **Define error handling:**
+   - What should happen on API failures?
+   - Empty state handling
+   - Loading state requirements
 
-4. **Mention accessibility:**
-   ```
-   Include proper ARIA labels, keyboard navigation,
-   and focus indicators
-   ```
+4. **Include accessibility requirements:**
+   - ARIA labels needed
+   - Keyboard navigation support
+   - Focus indicators
 
----
-
-## Services API Reference
-
-Every interface receives these service methods:
-
-```typescript
-// Call a Bubble backend workflow
-await services.callBubbleWorkflow('workflow-name', {
-  param1: 'value1'
-});
-
-// Call Bubble Data API
-await services.callBubbleDataApi('/obj/user/123', {
-  method: 'GET'
-});
-
-// Call Next.js API (auto-includes auth token)
-await services.callNextApi('/api/endpoint', {
-  method: 'POST',
-  body: JSON.stringify(data)
-});
-
-// Emit event to Bubble
-services.emitEvent('event-name', { payload: 'data' });
-// Dispatches: 'my-dashboard:event-name' CustomEvent
-
-// Check authentication
-const isAuth = services.isAuthenticated();
-const token = services.getNextToken();
-```
+5. **Reference similar patterns:**
+   - "Similar to the widget interface's loading pattern"
+   - "Use the same error handling as the auth flow"
 
 ---
 
-## Common Patterns
+## Workflow Naming Best Practices
 
-### Loading States
-```tsx
-const [loading, setLoading] = useState(false);
-const [error, setError] = useState<string | null>(null);
+Name your Bubble workflows descriptively:
 
-const fetchData = async () => {
-  setLoading(true);
-  setError(null);
-  try {
-    const result = await services.callNextApi('/api/data');
-    // handle result
-  } catch (err) {
-    setError((err as Error).message);
-    onEmit('error', { message: (err as Error).message });
-  } finally {
-    setLoading(false);
-  }
-};
-```
+| Good | Bad |
+|------|-----|
+| `get_user_dashboard_data` | `getData` |
+| `update_user_profile` | `update` |
+| `send_notification_email` | `sendEmail` |
+| `validate_payment_method` | `validate` |
 
-### Theme Support
-```tsx
-const { theme = 'light' } = props;
-
-return (
-  <div className={`container ${theme}`}>
-    {/* content */}
-  </div>
-);
-```
-
-```css
-.container { background: white; color: black; }
-.container.dark { background: #1f2937; color: white; }
-```
-
-### Mode Variants
-```tsx
-const { mode = 'full' } = props;
-
-return (
-  <div className={`container ${mode}`}>
-    {mode === 'compact' ? <CompactView /> : <FullView />}
-  </div>
-);
-```
+Use snake_case (Bubble convention) and include:
+- Action verb (get, update, send, validate)
+- Entity (user, notification, payment)
+- Context (dashboard, profile, method)
 
 ---
 
@@ -411,12 +427,15 @@ return (
 
 ## Deployment Checklist
 
+- [ ] AI agent completed Component.tsx and styles.ts
 - [ ] Interface builds without errors (`npm run build:interfaces`)
 - [ ] Types are correct (`npm run lint`)
 - [ ] Tested locally with `npm run dev`
 - [ ] Styles work in both light and dark themes
 - [ ] Events emit correctly (check browser console)
-- [ ] API calls include proper error handling
+- [ ] API calls to Bubble workflows work
+- [ ] Error handling tested
+- [ ] Loading and empty states look correct
 - [ ] Committed and pushed to repo
 - [ ] Vercel deployment successful
-- [ ] Bundle accessible at `/bundles/{name}.js`
+- [ ] Bundle accessible at `https://creatorcore-next-app.vercel.app/bundles/{name}.js`
