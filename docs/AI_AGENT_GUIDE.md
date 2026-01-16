@@ -18,7 +18,7 @@ This repository creates **embeddable React widgets** bundled as standalone JavaS
 
 ```
 Bubble.io Page
-├── Loads: https://your-app.vercel.app/bundles/my-feature.js
+├── Loads: https://creatorcore-next-app.vercel.app/bundles/my-feature.js
 ├── Calls: window.MyFeature.mount(container, config)
 ├── Listens: document.addEventListener('my-feature:event-name', ...)
 └── Provides: services object with API methods
@@ -55,25 +55,46 @@ src/
 
 ---
 
-## Creating a New Interface
+## Building Your Interface
 
-### Step 1: Scaffold the Interface
+**IMPORTANT**: The interface boilerplate should already be scaffolded for you at `src/interfaces/{interface-name}/`. You will work with these existing files:
+- `index.tsx` - Mount logic (DO NOT MODIFY)
+- `Component.tsx` - Your UI implementation (BUILD HERE)
+- `types.ts` - Type definitions (ADD CUSTOM TYPES)
+- `styles.ts` - CSS styles (ADD CUSTOM STYLES)
 
-```bash
-npm run create-interface my-feature
-```
+### Before You Start: Gather Requirements
 
-This creates `src/interfaces/my-feature/` with all required files.
+**If the user's prompt is missing specific details, you MUST ask clarifying questions before building.** Examples of information to gather:
 
-**Naming conventions** (automatic):
-- Input: `my-feature` or `MyFeature`
-- Directory: `my-feature` (kebab-case)
-- Component: `MyFeatureComponent` (PascalCase)
-- Global: `window.MyFeature` (PascalCase)
-- Events: `my-feature:event-name` (kebab-case prefix)
-- CSS classes: `.my-feature-*` (kebab-case prefix)
+**Required Information:**
+- What is the primary purpose/functionality of this interface?
+- What data does it need to display or collect?
+- What actions should users be able to perform?
+- Should it integrate with specific Bubble workflows or Data API endpoints?
+- What theme/styling should it use (light/dark/both)?
+- What mode should it support (compact/full/embedded)?
+- Are there specific UI/UX requirements?
 
-### Step 2: Build Your UI in Component.tsx
+**When to Ask Questions:**
+- User provides vague requirements ("build a dashboard", "add analytics")
+- Missing data structure details ("show user data" - which fields?)
+- Unclear interactions ("let users manage items" - what actions?)
+- No styling preferences specified
+- Integration details missing (which API endpoints, workflows?)
+
+**Use the AskUserQuestion tool** to gather this information before proceeding with implementation. Better to clarify upfront than build the wrong thing.
+
+### Naming Conventions (Reference)
+
+Your interface already follows these conventions:
+- Directory: `interface-name` (kebab-case)
+- Component: `InterfaceNameComponent` (PascalCase)
+- Global: `window.InterfaceName` (PascalCase)
+- Events: `interface-name:event-name` (kebab-case prefix)
+- CSS classes: `.interface-name-*` (kebab-case prefix)
+
+### Implementation Rules
 
 **CRITICAL RULES:**
 1. Build ALL your UI in `Component.tsx`
@@ -81,6 +102,7 @@ This creates `src/interfaces/my-feature/` with all required files.
 3. Use `services` for ALL API calls (never use fetch directly)
 4. Emit events via `onEmit()` to communicate with Bubble
 5. Prefix ALL CSS classes with your interface name (kebab-case)
+6. Ask questions if requirements are unclear or incomplete
 
 ---
 
@@ -198,7 +220,7 @@ import type { BubbleServices, BubbleUser } from '@/shared/bubble';
 export interface MyFeatureConfig {
   props: MyFeatureProps;           // Data from Bubble
   services: BubbleServices;         // API methods
-  nextApiBase: string;              // e.g., "https://your-app.vercel.app"
+  nextApiBase: string;              // e.g., "https://creatorcore-next-app.vercel.app"
   bubbleAppName: string;            // e.g., "myapp"
   isAuthenticated: boolean;         // Auth state
   debug?: boolean;                  // Enable console logging
@@ -738,7 +760,7 @@ public/
 
 1. Push to GitHub
 2. Vercel auto-deploys (or run `vercel --prod`)
-3. Interface available at: `https://your-app.vercel.app/bundles/my-feature.js`
+3. Interface available at: `https://creatorcore-next-app.vercel.app/bundles/my-feature.js`
 
 ---
 
@@ -749,7 +771,7 @@ public/
 In Bubble HTML element:
 ```html
 <div id="my-feature-container"></div>
-<script src="https://your-app.vercel.app/bundles/my-feature.js"></script>
+<script src="https://creatorcore-next-app.vercel.app/bundles/my-feature.js"></script>
 <script>
   const feature = window.MyFeature.mount(
     document.getElementById('my-feature-container'),
@@ -780,7 +802,7 @@ In Bubble HTML element:
         },
         callNextApi: async (endpoint, options) => {
           const token = localStorage.getItem('nextAccessToken');
-          return fetch(`https://your-app.vercel.app${endpoint}`, {
+          return fetch(`https://creatorcore-next-app.vercel.app${endpoint}`, {
             ...options,
             headers: {
               ...options?.headers,
@@ -796,7 +818,7 @@ In Bubble HTML element:
         getNextToken: () => localStorage.getItem('nextAccessToken'),
         isAuthenticated: () => !!localStorage.getItem('nextAccessToken')
       },
-      nextApiBase: 'https://your-app.vercel.app',
+      nextApiBase: 'https://creatorcore-next-app.vercel.app',
       bubbleAppName: 'your-bubble-app',
       isAuthenticated: !!localStorage.getItem('nextAccessToken'),
       debug: true

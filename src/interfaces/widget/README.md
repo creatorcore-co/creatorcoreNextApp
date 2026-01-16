@@ -12,7 +12,7 @@ The original Next.js widget for Bubble.io integration. Provides a demo interface
 ### Loading in Bubble
 
 ```html
-<script src="https://your-app.vercel.app/bundles/widget.js"></script>
+<script src="https://creatorcore-next-app.vercel.app/bundles/widget.js"></script>
 ```
 
 ### Mounting the Widget
@@ -28,7 +28,7 @@ const widget = window.NextWidget.mount(
       customData: {}
     },
     services: bubbleServices, // Provided by Bubble plugin
-    nextApiBase: 'https://your-app.vercel.app',
+    nextApiBase: 'https://creatorcore-next-app.vercel.app',
     bubbleAppName: 'your-bubble-app',
     isAuthenticated: true,
     debug: false

@@ -167,9 +167,9 @@ npm run build:all        # Build Next.js app + interfaces
 4. Deploy
 
 After deployment:
-- **Standalone app**: `https://your-app.vercel.app`
-- **Interface bundles**: `https://your-app.vercel.app/bundles/{name}.js`
-- **API routes**: `https://your-app.vercel.app/api/...`
+- **Standalone app**: `https://creatorcore-next-app.vercel.app`
+- **Interface bundles**: `https://creatorcore-next-app.vercel.app/bundles/{name}.js`
+- **API routes**: `https://creatorcore-next-app.vercel.app/api/...`
 
 ---
 
@@ -179,7 +179,7 @@ After deployment:
 
 ```html
 <div id="widget-container"></div>
-<script src="https://your-app.vercel.app/bundles/widget.js"></script>
+<script src="https://creatorcore-next-app.vercel.app/bundles/widget.js"></script>
 <script>
   const widget = window.NextWidget.mount(
     document.getElementById('widget-container'),
@@ -204,7 +204,7 @@ After deployment:
         },
         callNextApi: async (endpoint, options) => {
           const token = localStorage.getItem('nextAccessToken');
-          return fetch(`https://your-app.vercel.app${endpoint}`, {
+          return fetch(`https://creatorcore-next-app.vercel.app${endpoint}`, {
             ...options,
             headers: { ...options?.headers, Authorization: token ? `Bearer ${token}` : '' }
           }).then(r => r.json());
@@ -213,7 +213,7 @@ After deployment:
         getNextToken: () => localStorage.getItem('nextAccessToken'),
         isAuthenticated: () => !!localStorage.getItem('nextAccessToken')
       },
-      nextApiBase: 'https://your-app.vercel.app',
+      nextApiBase: 'https://creatorcore-next-app.vercel.app',
       bubbleAppName: 'your-bubble-app',
       isAuthenticated: false,
       debug: true

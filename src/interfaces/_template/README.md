@@ -13,7 +13,7 @@
 ### Loading in Bubble
 
 ```html
-<script src="https://your-app.vercel.app/bundles/{{INTERFACE_NAME_KEBAB}}.js"></script>
+<script src="https://creatorcore-next-app.vercel.app/bundles/{{INTERFACE_NAME_KEBAB}}.js"></script>
 ```
 
 ### Mounting the Interface
@@ -29,7 +29,7 @@ const interface = window.{{INTERFACE_NAME}}.mount(
       customData: {}
     },
     services: bubbleServices, // Provided by Bubble plugin
-    nextApiBase: 'https://your-app.vercel.app',
+    nextApiBase: 'https://creatorcore-next-app.vercel.app',
     bubbleAppName: 'your-bubble-app',
     isAuthenticated: true,
     debug: false
@@ -145,6 +145,6 @@ If you're an AI agent building features for this interface:
 
 When deployed to Vercel:
 
-- **Bundle URL**: `https://your-app.vercel.app/bundles/{{INTERFACE_NAME_KEBAB}}.js`
-- **API Base**: `https://your-app.vercel.app`
-- **Auth Endpoint**: `https://your-app.vercel.app/api/auth/bubble-exchange`
+- **Bundle URL**: `https://creatorcore-next-app.vercel.app/bundles/{{INTERFACE_NAME_KEBAB}}.js`
+- **API Base**: `https://creatorcore-next-app.vercel.app`
+- **Auth Endpoint**: `https://creatorcore-next-app.vercel.app/api/auth/bubble-exchange`

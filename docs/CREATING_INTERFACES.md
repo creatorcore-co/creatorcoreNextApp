@@ -85,11 +85,7 @@ List all events your interface should emit to Bubble:
 
 ### Prompting the AI Agent
 
-#### 1. Open Your AI Agent
-
-Open your AI coding agent (Claude Code, Cursor, etc.)
-
-#### 2. Provide the AI Agent Guide
+#### 1. Provide the AI Agent Guide
 
 Share the AI Agent Guide with your agent:
 ```
@@ -97,7 +93,7 @@ Please read @docs/AI_AGENT_GUIDE.md - this contains all the architectural
 patterns and requirements for building interfaces in this repository.
 ```
 
-#### 3. Structure Your Prompt
+#### 2. Structure Your Prompt
 
 Include these elements in your prompt:
 
@@ -155,52 +151,6 @@ Style guidelines:
 - Dark mode: #1f2937 background, #374151 cards
 ```
 
-### Full Example Prompt
-
-```
-Read @docs/AI_AGENT_GUIDE.md for the architecture and patterns.
-
-Create a "user-dashboard" interface with these requirements:
-
-UI DESIGN:
-- Modern card-based dashboard layout
-- Header with user avatar, name, and notification bell
-- 3-column stats grid (total views, posts, followers)
-- Activity feed with infinite scroll
-- Support light/dark themes and compact/full modes
-[Attached: dashboard-design.fig]
-
-DATA SOURCES:
-1. Bubble workflow: get_user_dashboard_data
-   Response: {
-     stats: { totalViews: number, totalPosts: number, followers: number },
-     recentActivity: Array<{ id: string, type: string, title: string, date: string }>,
-     notifications: { unread: number }
-   }
-   Call on component mount
-
-2. Bubble workflow: load_more_activity
-   Parameters: { offset: number }
-   Response: { activities: Array<...>, hasMore: boolean }
-   Call on scroll to bottom
-
-EVENTS TO EMIT:
-- 'dashboard-loaded' with { stats } - after data loads
-- 'activity-clicked' with { activityId, activityType } - on activity click
-- 'notification-bell-clicked' with { unreadCount } - on bell click
-- 'refresh-requested' with {} - on refresh button click
-- 'error' with { message, operation } - on any error
-
-STYLING:
-- Gradient buttons: #6366f1 to #8b5cf6
-- Border radius: 12px
-- Smooth hover transitions (200ms)
-- Dark mode: #1f2937 bg, #374151 cards, #f9fafb text
-- Light mode: #ffffff bg, #f9fafb cards, #1f2937 text
-
-The interface should handle loading states, empty states, and error states gracefully.
-```
-
 ---
 
 ## Step 3: Build the Interface Bundle
@@ -211,7 +161,7 @@ Once the AI agent has completed the interface, build all interfaces:
 npm run build:interfaces
 ```
 
-This generates `public/bundles/my-dashboard.js`.
+This generates `public/bundles/<interfce name>.js`.
 
 To build everything (Next.js app + all interfaces):
 
@@ -230,12 +180,7 @@ npm run build:all
    git push
    ```
 
-2. **Vercel auto-deploys** from your main branch (if connected), or manually deploy:
-   ```bash
-   vercel --prod
-   ```
-
-3. **Access your interface at:**
+2. **Access your interface at:**
    ```
    https://creatorcore-next-app.vercel.app/bundles/my-dashboard.js
    ```
@@ -250,10 +195,10 @@ Add your interface to Bubble using the plugin element. Configure with these valu
 
 | Field | Value | Description |
 |-------|-------|-------------|
-| **bundle_url** | `https://creatorcore-next-app.vercel.app/bundles/my-dashboard.js` | URL to your interface bundle |
-| **next_api_base** | `https://creatorcore-next-app.vercel.app` | Base URL for Next.js API routes |
-| **bubble_app_name** | `creatorcore` | Your Bubble app name |
-| **props_json** | `{"user": {"id": "...", "name": "..."}, "theme": "light", "mode": "embedded"}` | Props to pass to the interface (JSON string) |
+| **bundle_url** | `https://creatorcore-next-app.vercel.app/bundles/<interface name>.js` | Full URL to the widget bundle |
+| **vercel_base_url** | `https://creatorcore-next-app.vercel.app` | Base URL of your deployed Vercel/Next.js app |
+| **bubble_base_url** | `creatorcore` | Base URL of your Bubble app, including version |
+| **props_json** | `{"user": {"id": "...", "name": "..."}, "theme": "light", "mode": "embedded"}` | JSON string of props passed into the widget (use {} for none). |
 
 ### Example props_json Values
 

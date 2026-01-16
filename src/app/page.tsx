@@ -159,7 +159,7 @@ export default function HomePage() {
                 theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'
               }`}
             >
-              {`<script src="https://your-app.vercel.app/widget.js"></script>`}
+              {`<script src="https://creatorcore-next-app.vercel.app/widget.js"></script>`}
             </pre>
 
             <h3 className="text-lg font-semibold mb-4 mt-8">2. Mount the Widget</h3>
@@ -184,7 +184,7 @@ export default function HomePage() {
       getNextToken: () => localStorage.getItem('nextToken'),
       isAuthenticated: () => !!localStorage.getItem('nextToken')
     },
-    nextApiBase: 'https://your-app.vercel.app',
+    nextApiBase: 'https://creatorcore-next-app.vercel.app',
     bubbleAppName: 'your-bubble-app',
     isAuthenticated: true,
     debug: false
