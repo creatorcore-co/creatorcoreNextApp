@@ -75,13 +75,14 @@ export function Widget({ config, onEmit }: WidgetComponentProps) {
   }, [services, log, onEmit]);
 
   const handleEmitAction = useCallback(() => {
-    log('Emitting custom action');
-    onEmit('action', {
+    const payload = {
       action: 'button-clicked',
       timestamp: Date.now(),
       user: user?.id,
-    });
-  }, [log, onEmit, user]);
+    };
+    log('Emitting event to Bubble', payload);
+    services.emitEvent('action', payload);
+  }, [log, services, user]);
 
   const getUserInitials = (name?: string, email?: string): string => {
     if (name) {
