@@ -197,8 +197,8 @@ Add your interface to Bubble using the plugin element. Configure with these valu
 |-------|-------|-------------|
 | **bundle_url** | `https://creatorcore-next-app.vercel.app/bundles/<interface name>.js` | Full URL to the widget bundle |
 | **vercel_base_url** | `https://creatorcore-next-app.vercel.app` | Base URL of your deployed Vercel/Next.js app |
-| **bubble_base_url** | `creatorcore` | Base URL of your Bubble app, including version |
-| **props_json** | `{"user": {"id": "...", "name": "..."}, "theme": "light", "mode": "embedded"}` | JSON string of props passed into the widget (use {} for none). |
+| **bubble_base_url** | `https://app.creatorcore.co/version-test` | Base URL of your Bubble app, including version |
+| **props_json** | `{"user": {"id": "...", "name": "..."}, "theme": "light", "mode": "embedded"}` | JSON string of props passed into the widget (use {} for none) |
 
 ### Example props_json Values
 
