@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeToken } from '@/lib/auth';
-import type { TokenExchangeRequest, TokenExchangeResponse, ApiResponse } from '@/widget/types';
+import type { TokenExchangeRequest, TokenExchangeResponse } from '@/widget/types';
 
 /**
  * Handle CORS preflight requests
@@ -25,7 +25,15 @@ export async function OPTIONS() {
  *
  * Returns: { accessToken: string, expiresIn: number, user?: {...} }
  */
-export async function POST(request: NextRequest): Promise<NextResponse<ApiResponse<TokenExchangeResponse>>> {
+export async function POST(
+  request: NextRequest
+): Promise<NextResponse<TokenExchangeResponse | { error: string; code: string }>> {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Bubble-App-Name',
+  };
+
   try {
     // Parse request body
     let body: TokenExchangeRequest;
@@ -34,13 +42,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     } catch {
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'INVALID_REQUEST',
-            message: 'Invalid JSON body',
-          },
+          error: 'Invalid JSON body',
+          code: 'INVALID_REQUEST',
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -48,13 +53,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     if (!body.token || typeof body.token !== 'string') {
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'MISSING_TOKEN',
-            message: 'Token is required',
-          },
+          error: 'Token is required',
+          code: 'MISSING_TOKEN',
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -63,13 +65,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     if (parts.length !== 3) {
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code: 'INVALID_TOKEN_FORMAT',
-            message: 'Token must be a valid JWT',
-          },
+          error: 'Token must be a valid JWT',
+          code: 'INVALID_TOKEN_FORMAT',
         },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -77,18 +76,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
     try {
       const result = await exchangeToken(body.token);
 
-      return NextResponse.json(
-        {
-          success: true,
-          data: result,
-        },
-        {
-          status: 200,
-          headers: {
-            'Access-Control-Allow-Origin': '*',
-          },
-        }
-      );
+      return NextResponse.json(result, { status: 200, headers: corsHeaders });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Token exchange failed';
 
@@ -107,13 +95,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
       return NextResponse.json(
         {
-          success: false,
-          error: {
-            code,
-            message,
-          },
+          error: message,
+          code,
         },
-        { status }
+        { status, headers: corsHeaders }
       );
     }
   } catch (error) {
@@ -121,13 +106,10 @@ export async function POST(request: NextRequest): Promise<NextResponse<ApiRespon
 
     return NextResponse.json(
       {
-        success: false,
-        error: {
-          code: 'INTERNAL_ERROR',
-          message: 'An unexpected error occurred',
-        },
+        error: 'An unexpected error occurred',
+        code: 'INTERNAL_ERROR',
       },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
