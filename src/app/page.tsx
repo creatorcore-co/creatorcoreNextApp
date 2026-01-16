@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { Widget } from '@/components/Widget';
-import type { WidgetConfig, WidgetProps } from '@/widget/types';
+import { Widget } from '@/interfaces/widget/Component';
+import type { WidgetConfig, WidgetProps } from '@/interfaces/widget/types';
 
 /**
  * Standalone Mode - Demo Page
