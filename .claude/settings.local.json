@@ -8,7 +8,8 @@
       "Bash(npx tsc:*)",
       "Bash(npm ls:*)",
       "Bash(npm run build:all:*)",
-      "Bash(gh auth status:*)"
+      "Bash(gh auth status:*)",
+      "Bash(tree:*)"
     ]
   }
 }

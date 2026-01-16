@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { exchangeToken } from '@/lib/auth';
-import type { TokenExchangeRequest, TokenExchangeResponse } from '@/widget/types';
+import type { TokenExchangeRequest, TokenExchangeResponse } from '@/shared/bubble';
 
 /**
  * Handle CORS preflight requests

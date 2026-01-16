@@ -1,4 +1,4 @@
-import type { BubbleWorkflowResponse, BubbleDataResponse } from '@/widget/types';
+import type { BubbleWorkflowResponse, BubbleDataResponse } from '@/shared/bubble';
 
 /**
  * Configuration for Bubble API calls

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import type { WidgetConfig, BubbleUser } from '@/widget/types';
+import type { WidgetConfig, BubbleUser } from './types';
 
 interface WidgetComponentProps {
   config: WidgetConfig;
@@ -45,10 +45,18 @@ export function Widget({ config, onEmit }: WidgetComponentProps) {
         source: 'next-widget',
       });
       log('Workflow response:', result);
-      setActionState({ loading: false, error: null, response: result as Record<string, unknown> });
-      onEmit('workflow-complete', { workflow: 'example_workflow', result: result as Record<string, unknown> });
+      setActionState({
+        loading: false,
+        error: null,
+        response: result as Record<string, unknown>,
+      });
+      onEmit('workflow-complete', {
+        workflow: 'example_workflow',
+        result: result as Record<string, unknown>,
+      });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Workflow failed';
+      const message =
+        error instanceof Error ? error.message : 'Workflow failed';
       log('Workflow error:', message);
       setActionState({ loading: false, error: message, response: null });
       onEmit('error', { type: 'workflow', message });
@@ -64,10 +72,18 @@ export function Widget({ config, onEmit }: WidgetComponentProps) {
         method: 'GET',
       });
       log('API response:', result);
-      setActionState({ loading: false, error: null, response: result as Record<string, unknown> });
-      onEmit('api-call-complete', { endpoint: '/api/health', result: result as Record<string, unknown> });
+      setActionState({
+        loading: false,
+        error: null,
+        response: result as Record<string, unknown>,
+      });
+      onEmit('api-call-complete', {
+        endpoint: '/api/health',
+        result: result as Record<string, unknown>,
+      });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'API call failed';
+      const message =
+        error instanceof Error ? error.message : 'API call failed';
       log('API error:', message);
       setActionState({ loading: false, error: message, response: null });
       onEmit('error', { type: 'api', message });
@@ -106,7 +122,9 @@ export function Widget({ config, onEmit }: WidgetComponentProps) {
       <div className="widget-header">
         <h3 className="widget-title">Next.js Widget</h3>
         <div className="widget-status">
-          <span className={`status-dot ${isAuthenticated ? 'authenticated' : 'unauthenticated'}`} />
+          <span
+            className={`status-dot ${isAuthenticated ? 'authenticated' : 'unauthenticated'}`}
+          />
           <span>{isAuthenticated ? 'Connected' : 'Guest'}</span>
         </div>
       </div>
@@ -115,14 +133,21 @@ export function Widget({ config, onEmit }: WidgetComponentProps) {
         <div className="user-info">
           <div className="user-avatar">
             {user.avatar !== undefined ? (
-              <img src={user.avatar} alt={user.name !== undefined ? user.name : 'User'} />
+              <img
+                src={user.avatar}
+                alt={user.name !== undefined ? user.name : 'User'}
+              />
             ) : (
               <span>{getUserInitials(user.name, user.email)}</span>
             )}
           </div>
           <div className="user-details">
-            <p className="user-name">{user.name !== undefined ? user.name : 'User'}</p>
-            <p className="user-email">{user.email !== undefined ? user.email : user.id}</p>
+            <p className="user-name">
+              {user.name !== undefined ? user.name : 'User'}
+            </p>
+            <p className="user-email">
+              {user.email !== undefined ? user.email : user.id}
+            </p>
           </div>
         </div>
       )}
@@ -208,7 +233,10 @@ export class WidgetErrorBoundary extends React.Component<
   { children: React.ReactNode; onError?: (error: Error) => void },
   ErrorBoundaryState
 > {
-  constructor(props: { children: React.ReactNode; onError?: (error: Error) => void }) {
+  constructor(props: {
+    children: React.ReactNode;
+    onError?: (error: Error) => void;
+  }) {
     super(props);
     this.state = { hasError: false };
   }

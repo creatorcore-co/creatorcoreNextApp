@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "build:widget": "vite build --config vite.widget.config.ts",
-    "build:all": "npm run build && npm run build:widget",
+    "build:interfaces": "node scripts/build-interfaces.js",
+    "build:all": "npm run build && npm run build:interfaces",
+    "create-interface": "node scripts/create-interface.js",
     "start": "next start",
     "lint": "next lint"
   },

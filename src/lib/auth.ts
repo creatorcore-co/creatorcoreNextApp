@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
-import type { BubbleJWTPayload, TokenExchangeResponse } from '@/widget/types';
+import type { BubbleJWTPayload, TokenExchangeResponse } from '@/shared/bubble';
 
 /**
  * Get the JWT secret as a Uint8Array for jose library

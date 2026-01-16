@@ -10,7 +10,7 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/widget/entry.tsx'),
+      entry: resolve(__dirname, 'src/interfaces/widget/index.tsx'),
       name: 'NextWidget',
       fileName: () => 'widget.js',
       formats: ['iife'],

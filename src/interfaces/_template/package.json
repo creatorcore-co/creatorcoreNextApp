@@ -1,0 +1,12 @@
+{
+  "name": "{{INTERFACE_NAME_KEBAB}}",
+  "version": "1.0.0",
+  "description": "{{INTERFACE_NAME}} interface for Bubble.io integration",
+  "private": true,
+  "metadata": {
+    "displayName": "{{INTERFACE_NAME}}",
+    "globalName": "{{INTERFACE_NAME}}",
+    "eventPrefix": "{{INTERFACE_NAME_KEBAB}}",
+    "created": "{{DATE}}"
+  }
+}

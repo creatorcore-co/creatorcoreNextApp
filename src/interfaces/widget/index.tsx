@@ -1,97 +1,21 @@
 import React from 'react';
 import { createRoot, Root } from 'react-dom/client';
-import type {
-  WidgetConfig,
-  WidgetAPI,
-  WidgetProps,
-  NextWidgetGlobal,
-  LogLevel,
-} from './types';
-import { Widget } from '@/components/Widget';
-import { WidgetStyles } from '@/components/WidgetStyles';
-
-/**
- * Debug logger that respects the debug flag
- */
-function createLogger(debug: boolean) {
-  const log = (level: LogLevel, ...args: unknown[]) => {
-    if (!debug && level === 'debug') return;
-    const prefix = `[NextWidget:${level.toUpperCase()}]`;
-    switch (level) {
-      case 'error':
-        console.error(prefix, ...args);
-        break;
-      case 'warn':
-        console.warn(prefix, ...args);
-        break;
-      case 'info':
-        console.info(prefix, ...args);
-        break;
-      default:
-        console.log(prefix, ...args);
-    }
-  };
-
-  return {
-    debug: (...args: unknown[]) => log('debug', ...args),
-    info: (...args: unknown[]) => log('info', ...args),
-    warn: (...args: unknown[]) => log('warn', ...args),
-    error: (...args: unknown[]) => log('error', ...args),
-  };
-}
-
-/**
- * Event emitter for widget-to-parent communication
- */
-class WidgetEventEmitter {
-  private listeners: Map<string, Set<(payload?: Record<string, unknown>) => void>> = new Map();
-  private logger: ReturnType<typeof createLogger>;
-
-  constructor(debug: boolean) {
-    this.logger = createLogger(debug);
-  }
-
-  on(event: string, callback: (payload?: Record<string, unknown>) => void) {
-    if (!this.listeners.has(event)) {
-      this.listeners.set(event, new Set());
-    }
-    this.listeners.get(event)!.add(callback);
-    return () => this.off(event, callback);
-  }
-
-  off(event: string, callback: (payload?: Record<string, unknown>) => void) {
-    this.listeners.get(event)?.delete(callback);
-  }
-
-  emit(event: string, payload?: Record<string, unknown>) {
-    this.logger.debug('Emitting event:', event, payload);
-
-    // Dispatch custom event on the document for Bubble to listen to
-    const customEvent = new CustomEvent(`nextwidget:${event}`, {
-      detail: { event, payload, timestamp: Date.now() },
-      bubbles: true,
-      cancelable: false,
-    });
-    document.dispatchEvent(customEvent);
-
-    // Also call any registered listeners
-    this.listeners.get(event)?.forEach((callback) => {
-      try {
-        callback(payload);
-      } catch (error) {
-        this.logger.error('Error in event listener:', error);
-      }
-    });
-  }
-}
+import { createLogger, BubbleEventEmitter } from '@/shared/bubble';
+import type { WidgetConfig, WidgetAPI, WidgetProps } from './types';
+import { Widget } from './Component';
+import { WidgetStyles } from './styles';
 
 /**
  * Mount the widget to a container element
  */
 function mount(container: HTMLElement, config: WidgetConfig): WidgetAPI {
   const debug = config.debug ?? false;
-  const logger = createLogger(debug);
-  const eventEmitter = new WidgetEventEmitter(debug);
+  const logger = createLogger({ debug, prefix: 'NextWidget' });
+  const eventEmitter = new BubbleEventEmitter({
+    debug,
+    prefix: 'NextWidget',
+    eventPrefix: 'nextwidget',
+  });
 
   logger.info('Mounting widget with config:', {
     nextApiBase: config.nextApiBase,
@@ -203,13 +127,14 @@ function mount(container: HTMLElement, config: WidgetConfig): WidgetAPI {
 }
 
 // Create the global NextWidget object
-const NextWidget: NextWidgetGlobal = {
+const NextWidget: { mount: typeof mount } = {
   mount,
 };
 
 // Expose to window
 if (typeof window !== 'undefined') {
-  window.NextWidget = NextWidget;
+  (window as unknown as { NextWidget: typeof NextWidget }).NextWidget =
+    NextWidget;
 }
 
 export { NextWidget };
