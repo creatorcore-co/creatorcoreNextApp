@@ -1,14 +1,44 @@
 #!/usr/bin/env node
 /**
  * Build Interfaces Script
- * Discovers and builds all interfaces in src/interfaces/
+ * Discovers and builds interfaces in src/interfaces/
  * Each interface is built to public/bundles/<name>.js as an IIFE bundle
+ *
+ * Usage:
+ *   npm run build:interfaces              # Build all interfaces
+ *   npm run build:interfaces -- --only=widget,dashboard  # Build specific interfaces
+ *   npm run build:interfaces -- --changed # Build only changed interfaces
+ *   npm run build:interfaces -- --force   # Force rebuild all
  */
 
 const { build } = require('vite');
 const react = require('@vitejs/plugin-react');
 const path = require('path');
 const fs = require('fs');
+const { execSync } = require('child_process');
+
+/**
+ * Parse command line arguments
+ */
+function parseArgs(args) {
+  const result = {
+    only: null,
+    changed: false,
+    force: false,
+  };
+
+  for (const arg of args) {
+    if (arg.startsWith('--only=')) {
+      result.only = arg.slice(7).split(',').map((s) => s.trim());
+    } else if (arg === '--changed') {
+      result.changed = true;
+    } else if (arg === '--force') {
+      result.force = true;
+    }
+  }
+
+  return result;
+}
 
 /**
  * Discover all interfaces in src/interfaces/
@@ -55,6 +85,37 @@ async function discoverInterfaces() {
   }
 
   return interfaces;
+}
+
+/**
+ * Get changed interfaces using the detection script
+ */
+function getChangedInterfaces() {
+  try {
+    const result = execSync('node scripts/detect-changed-interfaces.js', {
+      encoding: 'utf-8',
+      cwd: path.resolve(__dirname, '..'),
+    });
+    return JSON.parse(result.trim());
+  } catch (error) {
+    console.error('Error detecting changes:', error.message);
+    return null;
+  }
+}
+
+/**
+ * Generate manifest after successful build
+ */
+function generateManifest() {
+  try {
+    execSync('node scripts/generate-bundle-manifest.js', {
+      encoding: 'utf-8',
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'inherit',
+    });
+  } catch (error) {
+    console.error('Warning: Failed to generate manifest:', error.message);
+  }
 }
 
 /**
@@ -114,8 +175,10 @@ async function buildInterface(iface) {
  * Main build function
  */
 async function main() {
+  const args = parseArgs(process.argv.slice(2));
+
   console.log('Discovering interfaces...');
-  const interfaces = await discoverInterfaces();
+  let interfaces = await discoverInterfaces();
 
   if (interfaces.length === 0) {
     console.log('No interfaces found to build.');
@@ -126,27 +189,72 @@ async function main() {
     `Found ${interfaces.length} interface(s): ${interfaces.map((i) => i.name).join(', ')}`
   );
 
+  // Filter interfaces based on arguments
+  let interfacesToBuild = interfaces;
+  let skipBuild = false;
+
+  if (args.changed && !args.force) {
+    // Build only changed interfaces
+    const changedNames = getChangedInterfaces();
+
+    if (changedNames === null) {
+      console.log('Warning: Could not detect changes, building all interfaces');
+    } else if (changedNames.length === 0) {
+      console.log('\nNo interfaces changed, skipping build.');
+      skipBuild = true;
+    } else {
+      console.log(`\nChanged interfaces: ${changedNames.join(', ')}`);
+      interfacesToBuild = interfaces.filter((i) => changedNames.includes(i.name));
+    }
+  } else if (args.only && !args.force) {
+    // Build only specified interfaces
+    const requestedNames = args.only;
+    const validNames = interfaces.map((i) => i.name);
+    const invalidNames = requestedNames.filter((n) => !validNames.includes(n));
+
+    if (invalidNames.length > 0) {
+      console.error(`Error: Unknown interface(s): ${invalidNames.join(', ')}`);
+      console.error(`Available: ${validNames.join(', ')}`);
+      process.exit(1);
+    }
+
+    interfacesToBuild = interfaces.filter((i) => requestedNames.includes(i.name));
+    console.log(`\nBuilding specified interfaces: ${requestedNames.join(', ')}`);
+  } else if (args.force) {
+    console.log('\nForce rebuilding all interfaces...');
+  }
+
+  if (skipBuild) {
+    return;
+  }
+
   // Ensure output directory exists
   const bundlesDir = path.resolve(__dirname, '../public/bundles');
   if (!fs.existsSync(bundlesDir)) {
     fs.mkdirSync(bundlesDir, { recursive: true });
   }
 
-  // Clear existing bundles
-  const existingFiles = fs.readdirSync(bundlesDir);
-  for (const file of existingFiles) {
-    if (file.endsWith('.js') || file.endsWith('.js.map')) {
-      fs.unlinkSync(path.resolve(bundlesDir, file));
+  // Clear existing bundles only if building all (not selective)
+  if (!args.only && !args.changed) {
+    const existingFiles = fs.readdirSync(bundlesDir);
+    for (const file of existingFiles) {
+      if (file.endsWith('.js') || file.endsWith('.js.map')) {
+        fs.unlinkSync(path.resolve(bundlesDir, file));
+      }
     }
   }
 
   // Build each interface
-  for (const iface of interfaces) {
+  for (const iface of interfacesToBuild) {
     await buildInterface(iface);
   }
 
-  console.log('\nAll interfaces built successfully!');
+  console.log(`\n${interfacesToBuild.length} interface(s) built successfully!`);
   console.log(`Output: public/bundles/`);
+
+  // Generate manifest after successful build
+  console.log('');
+  generateManifest();
 }
 
 main().catch((err) => {

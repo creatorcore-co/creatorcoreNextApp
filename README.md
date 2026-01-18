@@ -57,7 +57,10 @@ public/
 
 scripts/
 ├── create-interface.js            # Scaffolds new interfaces
-└── build-interfaces.js            # Builds all interfaces to bundles
+├── build-interfaces.js            # Builds interfaces (supports selective builds)
+├── detect-changed-interfaces.js   # Detects changed interfaces
+├── generate-bundle-manifest.js    # Generates bundle manifest
+└── discover-workflow.js           # CLI for Bubble workflow discovery
 ```
 
 ---
@@ -132,7 +135,7 @@ cp .env.example .env.local
 Configure `.env.local`:
 ```env
 JWT_SECRET=your-secret-key-minimum-32-characters (Ask Jack for this)
-NEXT_PUBLIC_BUBBLE_APP_NAME=creatorcore
+BUBBLE_BASE_URL=https://app.creatorcore.co/version-test
 ACCESS_TOKEN_EXPIRY=3600
 NEXT_PUBLIC_APP_URL=https://creatorcore-next-app.vercel.app
 ```
@@ -192,14 +195,15 @@ After deployment:
       },
       services: {
         callBubbleWorkflow: async (name, params) => {
-          return fetch(`https://YOUR_APP.bubbleapps.io/api/1.1/wf/${name}`, {
+          // Replace YOUR_BUBBLE_BASE_URL with your Bubble app URL
+          return fetch(`YOUR_BUBBLE_BASE_URL/api/1.1/wf/${name}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(params)
           }).then(r => r.json());
         },
         callBubbleDataApi: async (endpoint, options) => {
-          return fetch(`https://YOUR_APP.bubbleapps.io/api/1.1${endpoint}`, options)
+          return fetch(`YOUR_BUBBLE_BASE_URL/api/1.1${endpoint}`, options)
             .then(r => r.json());
         },
         callNextApi: async (endpoint, options) => {
@@ -328,6 +332,67 @@ interface Config {
 
 ---
 
+## AI Agent Support
+
+This repository includes a comprehensive skills system for AI coding agents (Claude, Cursor, etc.). Skills are located in `.claude/skills/` and help agents understand the codebase structure, patterns, and how to implement features correctly.
+
+### Available Skills
+
+| Skill | Purpose |
+|-------|---------|
+| `creatorcore-nextjs` | Master index and system overview |
+| `create-interface` | Creating new embeddable interfaces |
+| `bubble-integration` | Working with Bubble.io APIs |
+| `authentication` | JWT auth flows |
+| `component-patterns` | UI component development |
+| `deployment` | Build and deploy process |
+| `workflow-discovery` | Discovering Bubble API schemas |
+
+See `.claude/skills/SKILL.md` for the complete index.
+
+---
+
+## Development Tools
+
+### Workflow Discovery
+
+Discover Bubble workflow response schemas during development:
+
+```bash
+# Basic usage
+npm run discover-workflow get_user_profile
+
+# With request body
+npm run discover-workflow get_user_profile --body='{"user_id":"123"}'
+
+# Save TypeScript types to file
+npm run discover-workflow get_user_profile --output=src/types/user.ts
+
+# Add to workflow registry
+npm run discover-workflow get_user_profile --save-registry
+```
+
+Requires `BUBBLE_API_KEY` and `BUBBLE_BASE_URL` in `.env.local`.
+
+### Selective Builds
+
+Build only changed interfaces for faster development:
+
+```bash
+# Build only interfaces that changed
+npm run build:interfaces:changed
+
+# Build specific interfaces
+npm run build:interfaces -- --only=widget,dashboard
+
+# Force rebuild all
+npm run build:interfaces:force
+```
+
+The build system generates a manifest at `public/bundles/manifest.json` that tracks bundle versions. Commit this file to track changes across machines.
+
+---
+
 ## Commands Reference
 
 | Command | Description |
@@ -335,8 +400,13 @@ interface Config {
 | `npm run dev` | Start development server |
 | `npm run build` | Build Next.js app |
 | `npm run build:interfaces` | Build all interface bundles |
+| `npm run build:interfaces:changed` | Build only changed interfaces |
+| `npm run build:interfaces:force` | Force rebuild all interfaces |
 | `npm run build:all` | Build app + interfaces |
 | `npm run create-interface <name>` | Scaffold new interface |
+| `npm run detect-changes` | Detect changed interfaces |
+| `npm run generate-manifest` | Generate bundle manifest |
+| `npm run discover-workflow <name>` | Discover Bubble workflow schema |
 | `npm run lint` | Run ESLint |
 
 ---

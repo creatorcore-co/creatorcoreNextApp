@@ -7,8 +7,13 @@
     "build": "next build",
     "build:widget": "vite build --config vite.widget.config.ts",
     "build:interfaces": "node scripts/build-interfaces.js",
+    "build:interfaces:changed": "node scripts/build-interfaces.js --changed",
+    "build:interfaces:force": "node scripts/build-interfaces.js --force",
     "build:all": "npm run build && npm run build:interfaces",
     "create-interface": "node scripts/create-interface.js",
+    "detect-changes": "node scripts/detect-changed-interfaces.js",
+    "generate-manifest": "node scripts/generate-bundle-manifest.js",
+    "discover-workflow": "node scripts/discover-workflow.js",
     "start": "next start",
     "lint": "next lint"
   },
@@ -16,7 +21,8 @@
     "jose": "^6.1.3",
     "next": "^16.1.2",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
@@ -26,8 +32,10 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.2",
     "autoprefixer": "^10.4.23",
+    "dotenv": "^17.2.3",
     "eslint": "^9.39.2",
     "eslint-config-next": "^16.1.2",
+    "minimist": "^1.2.8",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "terser": "^5.46.0",

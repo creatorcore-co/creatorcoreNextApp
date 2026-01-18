@@ -1,925 +1,223 @@
-# AI Agent Guide: Building Bubble.io Interfaces
+# AI Agent Guide: CreatorCore Next.js
 
-This is a standalone guide for AI coding agents to build new interfaces in this Next.js repository. Each interface becomes an embeddable widget that integrates with Bubble.io through a custom plugin connector.
+This guide helps AI coding agents understand the CreatorCore system and navigate to the appropriate resources for specific tasks.
 
----
+## Skills System
 
-## Architecture Overview
+**Detailed implementation instructions are in `.claude/skills/`.** This guide provides an overview; refer to individual skills for step-by-step instructions.
 
-This repository creates **embeddable React widgets** bundled as standalone JavaScript files. Each interface:
+### Available Skills
 
-- Bundles into a single IIFE file (e.g., `my-feature.js`)
-- Exposes a global object (e.g., `window.MyFeature`) with a `mount()` function
-- Renders inside a Shadow DOM for complete style isolation
-- Communicates with Bubble via DOM CustomEvents
-- Receives services from Bubble to call APIs and workflows
-
-### How It Works
-
-```
-Bubble.io Page
-├── Loads: https://creatorcore-next-app.vercel.app/bundles/my-feature.js
-├── Calls: window.MyFeature.mount(container, config)
-├── Listens: document.addEventListener('my-feature:event-name', ...)
-└── Provides: services object with API methods
-```
+| Skill | Location | Use When... |
+|-------|----------|-------------|
+| **creatorcore-nextjs** | `.claude/skills/SKILL.md` | Starting any task, need system overview |
+| **create-interface** | `.claude/skills/create-interface/SKILL.md` | Creating a new widget/interface |
+| **bubble-integration** | `.claude/skills/bubble-integration/SKILL.md` | Calling Bubble APIs, using services object |
+| **authentication** | `.claude/skills/authentication/SKILL.md` | Implementing JWT auth, securing endpoints |
+| **component-patterns** | `.claude/skills/component-patterns/SKILL.md` | Building UI components, styling |
+| **deployment** | `.claude/skills/deployment/SKILL.md` | Building, deploying, troubleshooting |
+| **workflow-discovery** | `.claude/skills/workflow-discovery/SKILL.md` | Discovering Bubble API schemas |
 
 ---
 
-## Directory Structure
+## Quick Reference
 
-```
-src/
-├── interfaces/                    # All widget interfaces
-│   ├── _template/                 # Template (DO NOT MODIFY)
-│   │   ├── index.tsx              # Mount logic
-│   │   ├── Component.tsx          # UI template
-│   │   ├── types.ts               # Type definitions
-│   │   └── styles.ts              # CSS styles
-│   │
-│   └── {your-interface}/          # Your new interface
-│       ├── index.tsx              # DO NOT MODIFY - handles mounting
-│       ├── Component.tsx          # BUILD YOUR UI HERE
-│       ├── types.ts               # Add custom types here
-│       └── styles.ts              # Add custom styles here
-│
-├── shared/bubble/                 # Shared utilities (import from @/shared/bubble)
-│   ├── types.ts                   # BubbleServices, BubbleUser, etc.
-│   ├── logger.ts                  # Debug logging
-│   └── event-emitter.ts           # Event dispatching
-│
-└── app/api/                       # Next.js API routes
-    ├── auth/bubble-exchange/      # Token exchange endpoint
-    └── health/                    # Health check
-```
+### Task Decision Tree
 
----
+**"I need to create a new interface/widget"**
+→ Use skill: `create-interface`
+→ Command: `npm run create-interface <name>`
 
-## Building Your Interface
+**"I need to call a Bubble workflow or API"**
+→ Use skill: `bubble-integration`
+→ Use `services.callBubbleWorkflow()` or `services.callBubbleDataApi()`
 
-**IMPORTANT**: The interface boilerplate should already be scaffolded for you at `src/interfaces/{interface-name}/`. You will work with these existing files:
-- `index.tsx` - Mount logic (DO NOT MODIFY)
-- `Component.tsx` - Your UI implementation (BUILD HERE)
-- `types.ts` - Type definitions (ADD CUSTOM TYPES)
-- `styles.ts` - CSS styles (ADD CUSTOM STYLES)
+**"I need to know the response format of a Bubble workflow"**
+→ Use skill: `workflow-discovery`
+→ Command: `npm run discover-workflow <workflow_name>`
 
-### Before You Start: Gather Requirements
+**"I need to implement authentication"**
+→ Use skill: `authentication`
+→ Key endpoint: `/api/auth/bubble-exchange`
 
-**If the user's prompt is missing specific details, you MUST ask clarifying questions before building.** Examples of information to gather:
+**"I need to build UI components with styling"**
+→ Use skill: `component-patterns`
+→ Edit `Component.tsx` and `styles.ts`
 
-**Required Information:**
-- What is the primary purpose/functionality of this interface?
-- What data does it need to display or collect?
-- What actions should users be able to perform?
-- Should it integrate with specific Bubble workflows or Data API endpoints?
-- What theme/styling should it use (light/dark/both)?
-- What mode should it support (compact/full/embedded)?
-- Are there specific UI/UX requirements?
-
-**When to Ask Questions:**
-- User provides vague requirements ("build a dashboard", "add analytics")
-- Missing data structure details ("show user data" - which fields?)
-- Unclear interactions ("let users manage items" - what actions?)
-- No styling preferences specified
-- Integration details missing (which API endpoints, workflows?)
-
-**Use the AskUserQuestion tool** to gather this information before proceeding with implementation. Better to clarify upfront than build the wrong thing.
-
-### Naming Conventions (Reference)
-
-Your interface already follows these conventions:
-- Directory: `interface-name` (kebab-case)
-- Component: `InterfaceNameComponent` (PascalCase)
-- Global: `window.InterfaceName` (PascalCase)
-- Events: `interface-name:event-name` (kebab-case prefix)
-- CSS classes: `.interface-name-*` (kebab-case prefix)
-
-### Implementation Rules
-
-**CRITICAL RULES:**
-1. Build ALL your UI in `Component.tsx`
-2. DO NOT modify `index.tsx` - it contains the mount logic
-3. Use `services` for ALL API calls (never use fetch directly)
-4. Emit events via `onEmit()` to communicate with Bubble
-5. Prefix ALL CSS classes with your interface name (kebab-case)
-6. Ask questions if requirements are unclear or incomplete
+**"I need to build and deploy"**
+→ Use skill: `deployment`
+→ Command: `npm run build:interfaces`
 
 ---
 
-## Component.tsx Template
+## System Overview
 
-```tsx
-'use client';
+CreatorCore builds **embeddable React widgets** for Bubble.io:
 
-import React, { useState, useCallback } from 'react';
-import type { MyFeatureConfig } from './types';
-
-interface MyFeatureComponentProps {
-  config: MyFeatureConfig;
-  onEmit: (event: string, payload?: Record<string, unknown>) => void;
-}
-
-export function MyFeatureComponent({
-  config,
-  onEmit,
-}: MyFeatureComponentProps) {
-  // Destructure config
-  const { props, services, isAuthenticated, debug } = config;
-  const theme = props.theme ?? 'light';
-  const mode = props.mode ?? 'embedded';
-
-  // State
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Debug logger
-  const log = useCallback(
-    (...args: unknown[]) => {
-      if (debug) console.log('[MyFeature]', ...args);
-    },
-    [debug]
-  );
-
-  // Example action handler
-  const handleAction = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      log('Calling API...');
-
-      // Use services.callNextApi for Next.js endpoints
-      const result = await services.callNextApi('/api/my-endpoint', {
-        method: 'POST',
-        body: JSON.stringify({ userId: props.user?.id })
-      });
-
-      log('API response:', result);
-
-      // Emit event to Bubble
-      onEmit('action-complete', { result });
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error';
-      setError(message);
-      onEmit('error', { message });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Build class names with theme and mode
-  const cardClasses = ['my-feature-card', mode, theme]
-    .filter(Boolean)
-    .join(' ');
-
-  return (
-    <div className={cardClasses}>
-      <div className="my-feature-header">
-        <h3 className="my-feature-title">My Feature</h3>
-        <div className="my-feature-status">
-          <span className={`status-dot ${isAuthenticated ? 'authenticated' : 'unauthenticated'}`} />
-          <span>{isAuthenticated ? 'Connected' : 'Guest'}</span>
-        </div>
-      </div>
-
-      <div className="my-feature-content">
-        {props.user && (
-          <div className="my-feature-user">
-            <p>Welcome, {props.user.name || props.user.email || 'User'}!</p>
-          </div>
-        )}
-
-        <button
-          className="my-feature-button"
-          onClick={handleAction}
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : 'Take Action'}
-        </button>
-
-        {error && <div className="my-feature-error">{error}</div>}
-      </div>
-    </div>
-  );
-}
-
-export default MyFeatureComponent;
 ```
+src/interfaces/{name}/    →    public/bundles/{name}.js
+     ├── index.tsx              (single IIFE bundle)
+     ├── Component.tsx          exposes window.{Name}.mount()
+     ├── types.ts
+     └── styles.ts
+```
+
+### Key Concepts
+
+1. **Interfaces** render in Shadow DOM for style isolation
+2. **Services object** is provided by Bubble for API calls
+3. **Events** communicate back to Bubble via CustomEvents
+4. **JWT tokens** authenticate users between Bubble and Next.js
 
 ---
 
-## Types Definition (types.ts)
+## Development Workflow
 
-Your interface receives a config object with this structure:
+### Creating a New Interface
 
-```typescript
-import type { BubbleServices, BubbleUser } from '@/shared/bubble';
+1. **Scaffold the interface:**
+   ```bash
+   npm run create-interface my-widget
+   ```
 
-// Configuration passed during mount
-export interface MyFeatureConfig {
-  props: MyFeatureProps;           // Data from Bubble
-  services: BubbleServices;         // API methods
-  nextApiBase: string;              // e.g., "https://creatorcore-next-app.vercel.app"
-  bubbleAppName: string;            // e.g., "myapp"
-  isAuthenticated: boolean;         // Auth state
-  debug?: boolean;                  // Enable console logging
-}
+2. **Discover API schemas (if calling Bubble workflows):**
+   ```bash
+   npm run discover-workflow get_widget_data --body='{"widget_id":"123"}'
+   ```
 
-// Props from Bubble
-export interface MyFeatureProps {
-  user?: BubbleUser;                // User info
-  theme?: 'light' | 'dark' | 'system';
-  mode?: 'compact' | 'full' | 'embedded';
-  customData?: Record<string, unknown>;  // Any additional data
-}
+3. **Build the UI:**
+   - Edit `src/interfaces/my-widget/Component.tsx`
+   - Add styles to `styles.ts`
+   - Add types to `types.ts`
 
-// API returned from mount()
-export interface MyFeatureAPI {
-  update: (newProps: Partial<MyFeatureProps>) => void;
-  unmount: () => void;
-  emit: (eventName: string, payload?: Record<string, unknown>) => void;
-}
+4. **Build and test:**
+   ```bash
+   npm run build:interfaces
+   npm run dev  # Test locally
+   ```
+
+5. **Deploy:**
+   ```bash
+   git add .
+   git commit -m "Add my-widget interface"
+   git push  # Vercel auto-deploys
+   ```
+
+### Using the Workflow Discovery Tool
+
+Before building interfaces, discover the exact response format of Bubble workflows:
+
+```bash
+# Discover and see the response
+npm run discover-workflow get_user_profile --body='{"user_id":"123"}'
+
+# Save TypeScript types to a file
+npm run discover-workflow get_user_profile --output=src/interfaces/my-widget/api-types.ts
 ```
 
-### BubbleUser Type
-
-```typescript
-interface BubbleUser {
-  id: string;
-  email?: string;
-  name?: string;
-  avatar?: string;
-  extraFields?: Record<string, unknown>;
-}
-```
-
----
-
-## Services API Reference
-
-The `services` object provides these methods:
-
-### services.callNextApi(endpoint, options)
-Call Next.js API routes. Auth token is included automatically.
-
-```typescript
-// GET request
-const data = await services.callNextApi('/api/users');
-
-// POST request
-const result = await services.callNextApi('/api/save', {
-  method: 'POST',
-  body: JSON.stringify({ key: 'value' })
-});
-
-// With custom headers
-const result = await services.callNextApi('/api/upload', {
-  method: 'POST',
-  headers: { 'X-Custom-Header': 'value' },
-  body: formData
-});
-```
-
-### services.callBubbleWorkflow(name, params)
-Trigger a Bubble backend workflow.
-
-```typescript
-// Call workflow with parameters
-const result = await services.callBubbleWorkflow('process_order', {
-  orderId: '123',
-  action: 'confirm'
-});
-
-// Call workflow without parameters
-const result = await services.callBubbleWorkflow('refresh_data');
-```
-
-### services.callBubbleDataApi(endpoint, options)
-Call Bubble's Data API directly.
-
-```typescript
-// Get a list of items
-const users = await services.callBubbleDataApi('/obj/user', {
-  method: 'GET'
-});
-
-// Create an item
-const newItem = await services.callBubbleDataApi('/obj/order', {
-  method: 'POST',
-  body: JSON.stringify({ status: 'pending' })
-});
-
-// Update an item
-await services.callBubbleDataApi('/obj/order/123', {
-  method: 'PATCH',
-  body: JSON.stringify({ status: 'completed' })
-});
-```
-
-### services.emitEvent(name, payload)
-Emit event to Bubble (also available via `onEmit` prop).
-
-```typescript
-services.emitEvent('item-selected', { itemId: '123', itemName: 'Product' });
-```
-
-### services.isAuthenticated()
-Check if user has valid auth token.
-
-```typescript
-if (services.isAuthenticated()) {
-  // Show authenticated UI
-} else {
-  // Show login prompt
-}
-```
-
-### services.getNextToken()
-Get the current access token (rarely needed directly).
-
-```typescript
-const token = services.getNextToken();
-```
-
----
-
-## Event System
-
-### Emitting Events to Bubble
-
-Use the `onEmit` prop to notify Bubble of state changes:
-
-```typescript
-// Ready event (emitted automatically by index.tsx)
-onEmit('ready', { mounted: true });
-
-// Action events
-onEmit('action', { type: 'button-click', data: { buttonId: 'submit' } });
-onEmit('item-selected', { itemId: '123', itemData: { name: 'Product' } });
-onEmit('form-submitted', { formData: { email: 'user@example.com' } });
-
-// Error events
-onEmit('error', { message: 'Failed to load data', code: 'LOAD_ERROR' });
-
-// State change events
-onEmit('state-changed', { loading: false, hasData: true });
-```
-
-### Event Name Format
-
-Events are dispatched as DOM CustomEvents with the format:
-```
-{interface-name-kebab}:{event-name}
-```
-
-Examples:
-- `my-feature:ready`
-- `my-feature:action`
-- `my-feature:item-selected`
-- `my-feature:error`
-
-### Listening in Bubble
-
-Bubble listens for these events:
-```javascript
-document.addEventListener('my-feature:item-selected', (e) => {
-  console.log('Item selected:', e.detail.payload);
-  // e.detail = { event: 'item-selected', payload: {...}, timestamp: '...' }
-});
-```
-
----
-
-## Styles (styles.ts)
-
-**CRITICAL RULES:**
-1. ALL classes MUST be prefixed with your interface name (kebab-case)
-2. Styles are injected into Shadow DOM - no external CSS works
-3. Include both light and dark theme variants
-4. Include mode variants (compact, full, embedded)
-
-```typescript
-export const MyFeatureStyles = `
-/* Container - reset box-sizing */
-.my-feature-container {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #1f2937;
-  box-sizing: border-box;
-}
-
-.my-feature-container *,
-.my-feature-container *::before,
-.my-feature-container *::after {
-  box-sizing: inherit;
-}
-
-/* Main Card */
-.my-feature-card {
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-/* Header */
-.my-feature-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.my-feature-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #111827;
-  margin: 0;
-}
-
-/* Status indicator */
-.my-feature-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-}
-
-.status-dot.authenticated {
-  background-color: #10b981;
-}
-
-.status-dot.unauthenticated {
-  background-color: #f59e0b;
-}
-
-/* Content area */
-.my-feature-content {
-  padding: 12px 0;
-}
-
-/* User info */
-.my-feature-user {
-  margin-bottom: 16px;
-  padding: 12px;
-  background: #f9fafb;
-  border-radius: 8px;
-}
-
-.my-feature-user p {
-  margin: 0;
-  color: #374151;
-}
-
-/* Buttons */
-.my-feature-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-}
-
-.my-feature-button:hover:not(:disabled) {
-  opacity: 0.9;
-}
-
-.my-feature-button:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.my-feature-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Secondary button variant */
-.my-feature-button.secondary {
-  background: #f3f4f6;
-  color: #374151;
-}
-
-.my-feature-button.secondary:hover:not(:disabled) {
-  background: #e5e7eb;
-}
-
-/* Error display */
-.my-feature-error {
-  margin-top: 12px;
-  padding: 12px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  color: #dc2626;
-  font-size: 13px;
-}
-
-/* ================================
-   DARK THEME
-   ================================ */
-.my-feature-card.dark {
-  background: #1f2937;
-  color: #f9fafb;
-}
-
-.my-feature-card.dark .my-feature-header {
-  border-bottom-color: #374151;
-}
-
-.my-feature-card.dark .my-feature-title {
-  color: #f9fafb;
-}
-
-.my-feature-card.dark .my-feature-status {
-  color: #9ca3af;
-}
-
-.my-feature-card.dark .my-feature-user {
-  background: #374151;
-}
-
-.my-feature-card.dark .my-feature-user p {
-  color: #e5e7eb;
-}
-
-.my-feature-card.dark .my-feature-error {
-  background: #450a0a;
-  border-color: #991b1b;
-  color: #fca5a5;
-}
-
-.my-feature-card.dark .my-feature-button.secondary {
-  background: #374151;
-  color: #e5e7eb;
-}
-
-/* ================================
-   MODE VARIANTS
-   ================================ */
-.my-feature-card.compact {
-  padding: 12px;
-  max-width: 300px;
-}
-
-.my-feature-card.compact .my-feature-title {
-  font-size: 14px;
-}
-
-.my-feature-card.full {
-  max-width: 100%;
-}
-
-.my-feature-card.embedded {
-  box-shadow: none;
-  border: 1px solid #e5e7eb;
-}
-
-.my-feature-card.dark.embedded {
-  border-color: #374151;
-}
-`;
-```
+The tool:
+- Calls the Bubble workflow
+- Shows the actual response
+- Infers JSON Schema from the response
+- Generates TypeScript interfaces
+- Generates Zod schemas for validation
 
 ---
 
 ## Common Patterns
 
-### Loading State with Error Handling
+### Calling Bubble APIs
 
 ```typescript
-const [loading, setLoading] = useState(false);
+// In Component.tsx
+const { services } = config;
+
+// Call a Bubble workflow
+const result = await services.callBubbleWorkflow('get_data', { user_id: '123' });
+
+// Call Bubble Data API
+const items = await services.callBubbleDataApi('/obj/items');
+
+// Call Next.js API
+const data = await services.callNextApi('/api/endpoint');
+```
+
+### Emitting Events
+
+```typescript
+// Notify Bubble of state changes
+onEmit('data-loaded', { count: items.length });
+onEmit('item-selected', { itemId: item.id });
+onEmit('error', { message: 'Failed to load' });
+```
+
+### Handling Loading/Error States
+
+```typescript
+const [loading, setLoading] = useState(true);
 const [error, setError] = useState<string | null>(null);
-const [data, setData] = useState<DataType | null>(null);
 
-const fetchData = async () => {
-  setLoading(true);
-  setError(null);
-
-  try {
-    const result = await services.callNextApi('/api/data');
-    setData(result);
-    onEmit('data-loaded', { count: result.length });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : 'Failed to load';
-    setError(message);
-    onEmit('error', { message, operation: 'fetch-data' });
-  } finally {
-    setLoading(false);
-  }
-};
-```
-
-### Form Submission
-
-```typescript
-const [formData, setFormData] = useState({ name: '', email: '' });
-const [submitting, setSubmitting] = useState(false);
-
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setSubmitting(true);
-
-  onEmit('form-submitting', { formId: 'user-form' });
-
-  try {
-    const result = await services.callNextApi('/api/submit', {
-      method: 'POST',
-      body: JSON.stringify(formData)
-    });
-
-    onEmit('form-submitted', { result });
-
-    // Optionally trigger Bubble workflow
-    await services.callBubbleWorkflow('process_submission', {
-      submissionId: result.id
-    });
-
-  } catch (err) {
-    onEmit('form-error', { message: (err as Error).message });
-  } finally {
-    setSubmitting(false);
-  }
-};
-```
-
-### Conditional Rendering by Auth State
-
-```typescript
-if (!isAuthenticated) {
-  return (
-    <div className="my-feature-card">
-      <p>Please log in to continue</p>
-      <button onClick={() => onEmit('login-required', {})}>
-        Log In
-      </button>
-    </div>
-  );
-}
-
-// Authenticated UI
-return (
-  <div className="my-feature-card">
-    <p>Welcome back, {props.user?.name}!</p>
-    {/* ... */}
-  </div>
-);
-```
-
-### List with Selection
-
-```typescript
-const [items, setItems] = useState<Item[]>([]);
-const [selectedId, setSelectedId] = useState<string | null>(null);
-
-const handleSelect = (item: Item) => {
-  setSelectedId(item.id);
-  onEmit('item-selected', {
-    itemId: item.id,
-    itemData: item
-  });
-};
-
-return (
-  <ul className="my-feature-list">
-    {items.map(item => (
-      <li
-        key={item.id}
-        className={`my-feature-list-item ${selectedId === item.id ? 'selected' : ''}`}
-        onClick={() => handleSelect(item)}
-      >
-        {item.name}
-      </li>
-    ))}
-  </ul>
-);
-```
-
-### Theme-Aware Styling
-
-```typescript
-const { theme = 'light' } = props;
-
-// Apply theme class
-const cardClasses = `my-feature-card ${theme}`;
-
-// Or conditional styling
-const backgroundColor = theme === 'dark' ? '#1f2937' : '#ffffff';
-```
-
----
-
-## Build and Deploy
-
-### Build Commands
-
-```bash
-# Build all interfaces to public/bundles/
-npm run build:interfaces
-
-# Build Next.js app + all interfaces
-npm run build:all
-
-# Development server (test locally)
-npm run dev
-
-# Lint check
-npm run lint
-```
-
-### Output
-
-After `npm run build:interfaces`:
-```
-public/
-└── bundles/
-    ├── widget.js        # Original widget
-    └── my-feature.js    # Your new interface
-```
-
-### Vercel Deployment
-
-1. Push to GitHub
-2. Vercel auto-deploys (or run `vercel --prod`)
-3. Interface available at: `https://creatorcore-next-app.vercel.app/bundles/my-feature.js`
-
----
-
-## Bubble Plugin Integration
-
-### Loading the Interface
-
-In Bubble HTML element:
-```html
-<div id="my-feature-container"></div>
-<script src="https://creatorcore-next-app.vercel.app/bundles/my-feature.js"></script>
-<script>
-  const feature = window.MyFeature.mount(
-    document.getElementById('my-feature-container'),
-    {
-      props: {
-        user: {
-          id: 'BUBBLE_USER_ID',
-          name: 'BUBBLE_USER_NAME',
-          email: 'BUBBLE_USER_EMAIL'
-        },
-        theme: 'light',
-        mode: 'embedded',
-        customData: {
-          // Any data from Bubble
-        }
-      },
-      services: {
-        callBubbleWorkflow: async (name, params) => {
-          return fetch(`https://YOUR_APP.bubbleapps.io/api/1.1/wf/${name}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(params)
-          }).then(r => r.json());
-        },
-        callBubbleDataApi: async (endpoint, options) => {
-          return fetch(`https://YOUR_APP.bubbleapps.io/api/1.1${endpoint}`, options)
-            .then(r => r.json());
-        },
-        callNextApi: async (endpoint, options) => {
-          const token = localStorage.getItem('nextAccessToken');
-          return fetch(`https://creatorcore-next-app.vercel.app${endpoint}`, {
-            ...options,
-            headers: {
-              ...options?.headers,
-              'Authorization': token ? `Bearer ${token}` : '',
-              'Content-Type': 'application/json'
-            }
-          }).then(r => r.json());
-        },
-        emitEvent: (name, payload) => {
-          // Bubble's custom event handler
-          bubble_fn_emitEvent(name, payload);
-        },
-        getNextToken: () => localStorage.getItem('nextAccessToken'),
-        isAuthenticated: () => !!localStorage.getItem('nextAccessToken')
-      },
-      nextApiBase: 'https://creatorcore-next-app.vercel.app',
-      bubbleAppName: 'your-bubble-app',
-      isAuthenticated: !!localStorage.getItem('nextAccessToken'),
-      debug: true
+useEffect(() => {
+  const loadData = async () => {
+    try {
+      const result = await services.callBubbleWorkflow('get_data');
+      setData(result);
+      onEmit('data-loaded', { success: true });
+    } catch (err) {
+      setError((err as Error).message);
+      onEmit('error', { message: (err as Error).message });
+    } finally {
+      setLoading(false);
     }
-  );
-
-  // Store reference for updates
-  window.myFeatureInstance = feature;
-</script>
-```
-
-### Listening for Events in Bubble
-
-```javascript
-// Listen for interface events
-document.addEventListener('my-feature:ready', (e) => {
-  console.log('Interface ready:', e.detail);
-});
-
-document.addEventListener('my-feature:action', (e) => {
-  console.log('Action:', e.detail.payload);
-  // Trigger Bubble workflow based on action
-});
-
-document.addEventListener('my-feature:error', (e) => {
-  console.error('Error:', e.detail.payload.message);
-  // Show error in Bubble UI
-});
-
-document.addEventListener('my-feature:item-selected', (e) => {
-  const { itemId, itemData } = e.detail.payload;
-  // Update Bubble state with selected item
-});
-```
-
-### Updating the Interface from Bubble
-
-```javascript
-// Update props
-window.myFeatureInstance.update({
-  theme: 'dark',
-  customData: { newKey: 'newValue' }
-});
-
-// Emit event programmatically
-window.myFeatureInstance.emit('refresh-requested', {});
-
-// Unmount when done
-window.myFeatureInstance.unmount();
+  };
+  loadData();
+}, [services, onEmit]);
 ```
 
 ---
 
-## Best Practices
+## Critical Rules
 
-### DO:
-- Build all UI in `Component.tsx`
-- Use `services` for ALL API calls
-- Emit events for ALL state changes Bubble needs to know about
-- Prefix ALL CSS classes with interface name
-- Include both light and dark theme styles
-- Handle loading and error states
-- Use TypeScript strictly
-- Test locally before building
-
-### DON'T:
-- Modify `index.tsx`
-- Use `fetch()` directly (use `services.callNextApi()`)
-- Store sensitive data in component state
-- Use external stylesheets or CSS imports
-- Use unprefixed CSS class names
-- Skip error handling
-- Emit events without payloads when data is available
+1. **Never modify `index.tsx`** - it's auto-generated and handles mounting
+2. **Use `services` for ALL API calls** - never use `fetch()` directly
+3. **Prefix ALL CSS classes** with interface name (e.g., `.my-widget-card`)
+4. **Support both light and dark themes** in `styles.ts`
+5. **Emit events for state changes** that Bubble needs to know about
+6. **Handle loading and error states** - always show feedback to users
 
 ---
 
-## Troubleshooting
+## File Locations
 
-### Build Errors
-- Check all imports use `@/` alias
-- Ensure types.ts exports match Component.tsx imports
-- Run `npm run lint` for TypeScript errors
+| What | Where |
+|------|-------|
+| Interface source | `src/interfaces/{name}/` |
+| Built bundles | `public/bundles/{name}.js` |
+| Shared utilities | `src/shared/bubble/` |
+| Server utilities | `src/lib/` |
+| API routes | `src/app/api/` |
+| Skills documentation | `.claude/skills/` |
+| Bundle manifest | `public/bundles/manifest.json` |
+| Workflow registry | `src/config/bubble-workflows.ts` |
 
-### Styles Not Working
-- Verify all classes are prefixed with interface name
-- Check styles are in `styles.ts` (not external CSS)
-- Ensure Shadow DOM container class is applied
+---
 
-### Events Not Reaching Bubble
-- Check browser console for event dispatch logs
-- Verify event name format: `{interface-name}:{event}`
-- Ensure Bubble listener uses exact event name
+## Commands Reference
 
-### API Calls Failing
-- Use `services.callNextApi()` (not fetch)
-- Check API route exists and handles CORS
-- Verify auth token (may be expired)
-- Check debug logs with `debug: true`
+| Command | Purpose |
+|---------|---------|
+| `npm run create-interface <name>` | Scaffold new interface |
+| `npm run build:interfaces` | Build all interfaces |
+| `npm run build:interfaces:changed` | Build only changed |
+| `npm run discover-workflow <name>` | Discover Bubble API schema |
+| `npm run dev` | Start dev server |
+| `npm run lint` | Check for errors |
 
-### Interface Not Mounting
-- Verify container element exists
-- Check script URL is correct
-- Look for JavaScript errors in console
-- Ensure config object has all required fields
+---
+
+## Getting Help
+
+- **System overview**: `.claude/skills/SKILL.md`
+- **Creating interfaces**: `.claude/skills/create-interface/SKILL.md`
+- **Bubble integration**: `.claude/skills/bubble-integration/SKILL.md`
+- **Full documentation**: `docs/CREATING_INTERFACES.md`

@@ -30,8 +30,8 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        // Allow widget.js to be loaded from any origin
-        source: '/widget.js',
+        // Allow interface bundles to be loaded from any origin
+        source: '/bundles/:path*',
         headers: [
           {
             key: 'Access-Control-Allow-Origin',

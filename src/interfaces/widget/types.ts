@@ -22,7 +22,7 @@ export interface WidgetConfig {
   /** Base URL for Next.js API calls */
   nextApiBase: string;
 
-  /** Bubble app name (e.g., "myapp" for myapp.bubbleapps.io) */
+  /** Bubble app name */
   bubbleAppName: string;
 
   /** Whether the user is authenticated */

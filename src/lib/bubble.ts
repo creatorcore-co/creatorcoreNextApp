@@ -4,24 +4,28 @@ import type { BubbleWorkflowResponse, BubbleDataResponse } from '@/shared/bubble
  * Configuration for Bubble API calls
  */
 export interface BubbleApiConfig {
-  appName: string;
+  /** Full Bubble base URL (e.g., "https://app.creatorcore.co/version-04c") */
+  baseUrl: string;
   apiToken?: string;
-  version?: 'test' | 'live';
 }
 
 /**
- * Get the Bubble API base URL
+ * Get the Bubble API URL from base URL
+ * @param baseUrl - Full Bubble base URL (e.g., "https://app.creatorcore.co/version-04c")
  */
-export function getBubbleApiUrl(appName: string, version: 'test' | 'live' = 'live'): string {
-  const versionPath = version === 'test' ? '/version-test' : '';
-  return `https://${appName}.bubbleapps.io${versionPath}/api/1.1`;
+export function getBubbleApiUrl(baseUrl: string): string {
+  // Remove trailing slash if present
+  const cleanBaseUrl = baseUrl.replace(/\/$/, '');
+  return `${cleanBaseUrl}/api/1.1`;
 }
 
 /**
  * Get the Bubble workflow URL
+ * @param baseUrl - Full Bubble base URL (e.g., "https://app.creatorcore.co/version-04c")
+ * @param workflowName - Name of the workflow
  */
-export function getBubbleWorkflowUrl(appName: string, workflowName: string): string {
-  return `${getBubbleApiUrl(appName)}/wf/${workflowName}`;
+export function getBubbleWorkflowUrl(baseUrl: string, workflowName: string): string {
+  return `${getBubbleApiUrl(baseUrl)}/wf/${workflowName}`;
 }
 
 /**
@@ -33,7 +37,7 @@ export async function callBubbleWorkflow(
   workflowName: string,
   params?: Record<string, unknown>
 ): Promise<BubbleWorkflowResponse> {
-  const url = getBubbleWorkflowUrl(config.appName, workflowName);
+  const url = getBubbleWorkflowUrl(config.baseUrl, workflowName);
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -80,8 +84,8 @@ export async function callBubbleDataApi<T = unknown>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<BubbleDataResponse<T>> {
-  const baseUrl = getBubbleApiUrl(config.appName, config.version);
-  const url = `${baseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+  const apiBaseUrl = getBubbleApiUrl(config.baseUrl);
+  const url = `${apiBaseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -140,22 +144,13 @@ export function sanitizeBubbleData<T>(data: T): T {
 }
 
 /**
- * Validate that a string is a valid Bubble app name
+ * Validate that a string is a valid Bubble base URL
  */
-export function isValidBubbleAppName(name: string): boolean {
-  // Bubble app names are lowercase alphanumeric with optional hyphens
-  return /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/.test(name);
-}
-
-/**
- * Parse a Bubble app URL to extract the app name
- */
-export function parseBubbleAppUrl(url: string): string | null {
+export function isValidBubbleBaseUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
-    const match = parsed.hostname.match(/^([a-z0-9-]+)\.bubbleapps\.io$/);
-    return match ? match[1] : null;
+    return parsed.protocol === 'https:' || parsed.protocol === 'http:';
   } catch {
-    return null;
+    return false;
   }
 }

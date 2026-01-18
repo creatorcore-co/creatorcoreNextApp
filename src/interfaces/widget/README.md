@@ -1,6 +1,6 @@
 # NextWidget Interface
 
-**Bundle**: `/bundles/widget.js` (or legacy `/widget.js`)
+**Bundle**: `/bundles/widget.js`
 **Global Object**: `window.NextWidget`
 
 ## Purpose
@@ -76,7 +76,6 @@ document.addEventListener('nextwidget:workflow-complete', (e) => {
 
 ```bash
 npm run dev              # Start Next.js dev server
-npm run build:widget     # Build legacy widget.js
 npm run build:interfaces # Build all interface bundles
 ```
 

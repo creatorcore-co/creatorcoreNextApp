@@ -12,6 +12,34 @@ Each interface in this repo is a self-contained React widget that:
 
 ---
 
+## Before You Start
+
+### Discover Your API Schemas
+
+Before building an interface, use the workflow discovery tool to understand the exact response format of the Bubble workflows you'll be calling:
+
+```bash
+npm run discover-workflow your_workflow_name --body='{"param":"value"}'
+```
+
+This will show you:
+- The exact response structure
+- Generated TypeScript types you can use
+- Zod schemas for runtime validation
+
+Example:
+```bash
+# Discover the response format
+npm run discover-workflow get_user_dashboard_data --body='{"user_id":"123"}'
+
+# Save TypeScript types to your interface
+npm run discover-workflow get_user_dashboard_data --output=src/interfaces/my-dashboard/api-types.ts
+```
+
+See the `workflow-discovery` skill in `.claude/skills/` for detailed usage.
+
+---
+
 ## Step 1: Create the Interface Boilerplate
 
 Run the create-interface script with your interface name (use kebab-case):
@@ -358,6 +386,53 @@ Use snake_case (Bubble convention) and include:
 
 ---
 
+## Using the Workflow Registry
+
+For type-safe API calls, use the workflow registry after discovering your workflows:
+
+```typescript
+import { BUBBLE_WORKFLOWS, type WorkflowResponse } from '@/config/bubble-workflows';
+
+// In your component
+const result = await services.callBubbleWorkflow(
+  BUBBLE_WORKFLOWS.getUserProfile.name,
+  { user_id: userId }
+) as WorkflowResponse<'getUserProfile'>;
+```
+
+Add workflows to the registry at `src/config/bubble-workflows.ts` with:
+```bash
+npm run discover-workflow get_user_profile --save-registry
+```
+
+---
+
+## Build System
+
+### Selective Builds
+
+For faster development, use selective builds that only rebuild changed interfaces:
+
+```bash
+# Build only interfaces that changed
+npm run build:interfaces:changed
+
+# Build specific interfaces
+npm run build:interfaces -- --only=my-dashboard,widget
+
+# Force rebuild all
+npm run build:interfaces:force
+```
+
+### Bundle Manifest
+
+After building, a manifest is generated at `public/bundles/manifest.json`. This file:
+- Tracks bundle versions and sizes
+- Enables change detection across machines
+- Should be committed to git
+
+---
+
 ## Build Commands Summary
 
 | Command | Description |
@@ -365,7 +440,10 @@ Use snake_case (Bubble convention) and include:
 | `npm run create-interface <name>` | Scaffold new interface from template |
 | `npm run dev` | Start Next.js dev server for testing |
 | `npm run build:interfaces` | Build all interfaces to `public/bundles/` |
+| `npm run build:interfaces:changed` | Build only changed interfaces |
+| `npm run build:interfaces:force` | Force rebuild all interfaces |
 | `npm run build:all` | Build Next.js app + all interfaces |
+| `npm run discover-workflow <name>` | Discover Bubble workflow schema |
 | `npm run lint` | Check for TypeScript/ESLint errors |
 
 ---
