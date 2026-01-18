@@ -1,4 +1,4 @@
-import type { BubbleWorkflowResponse, BubbleDataResponse } from '@/shared/bubble';
+import type { BubbleWorkflowResponse } from '@/shared/bubble';
 
 /**
  * Configuration for Bubble API calls
@@ -73,40 +73,6 @@ export async function callBubbleWorkflow(
       error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
-}
-
-/**
- * Call the Bubble Data API
- * Note: This is primarily used server-side. Client-side calls should use the services provided to the widget.
- */
-export async function callBubbleDataApi<T = unknown>(
-  config: BubbleApiConfig,
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<BubbleDataResponse<T>> {
-  const apiBaseUrl = getBubbleApiUrl(config.baseUrl);
-  const url = `${apiBaseUrl}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
-
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  };
-
-  if (config.apiToken) {
-    headers['Authorization'] = `Bearer ${config.apiToken}`;
-  }
-
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Bubble API error: ${response.status} - ${errorText}`);
-  }
-
-  return response.json();
 }
 
 /**

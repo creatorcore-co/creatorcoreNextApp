@@ -17,7 +17,6 @@ export type {
   BubbleUser,
   ApiResponse,
   BubbleWorkflowResponse,
-  BubbleDataResponse,
   TokenExchangeRequest,
   TokenExchangeResponse,
   BubbleJWTPayload,

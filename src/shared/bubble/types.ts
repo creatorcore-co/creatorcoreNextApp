@@ -22,16 +22,6 @@ export interface BubbleServices {
   ) => Promise<unknown>;
 
   /**
-   * Call the Bubble Data API
-   * @param endpoint - The API endpoint (e.g., "/obj/user")
-   * @param options - Fetch options
-   */
-  callBubbleDataApi: (
-    endpoint: string,
-    options?: RequestInit
-  ) => Promise<unknown>;
-
-  /**
    * Call a Next.js API route
    * @param endpoint - The API endpoint (e.g., "/api/users")
    * @param options - Fetch options
@@ -104,18 +94,6 @@ export interface BubbleWorkflowResponse {
   status: 'success' | 'error';
   response?: unknown;
   error?: string;
-}
-
-/**
- * Bubble Data API response
- */
-export interface BubbleDataResponse<T = unknown> {
-  response: {
-    cursor: number;
-    results: T[];
-    count: number;
-    remaining: number;
-  };
 }
 
 // ============================================================================

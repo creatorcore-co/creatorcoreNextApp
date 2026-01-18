@@ -52,7 +52,7 @@ This interface includes:
 
 - **Authentication**: JWT token exchange via `/api/auth/bubble-exchange`
 - **Event Emitter**: Send events to Bubble using `onEmit()`
-- **Services Layer**: Access to Bubble workflows and APIs
+- **Services Layer**: Access to Bubble workflows
 - **Shadow DOM**: Style isolation from Bubble's CSS
 - **Props Updates**: Reactive updates from Bubble via `interface.update()`
 
@@ -60,7 +60,6 @@ This interface includes:
 
 ```typescript
 services.callBubbleWorkflow(name, params) // Call Bubble workflows
-services.callBubbleDataApi(endpoint, options) // Call Bubble Data API
 services.callNextApi(endpoint, options) // Call Next.js API (with auth)
 services.emitEvent(name, payload) // Emit events to Bubble
 services.getNextToken() // Get current access token

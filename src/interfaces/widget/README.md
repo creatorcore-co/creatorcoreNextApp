@@ -83,7 +83,6 @@ npm run build:interfaces # Build all interface bundles
 
 ```typescript
 services.callBubbleWorkflow(name, params) // Call Bubble workflows
-services.callBubbleDataApi(endpoint, options) // Call Bubble Data API
 services.callNextApi(endpoint, options) // Call Next.js API (with auth)
 services.emitEvent(name, payload) // Emit events to Bubble
 services.getNextToken() // Get current access token

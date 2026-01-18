@@ -34,9 +34,9 @@ This guide helps AI coding agents understand the CreatorCore system and navigate
 → Design workflow specifications for user to create in Bubble
 → Then test with `workflow-discovery` after user creates them
 
-**"I need to call a Bubble workflow or API"**
+**"I need to call a Bubble workflow"**
 → Use skill: `bubble-integration`
-→ Use `services.callBubbleWorkflow()` or `services.callBubbleDataApi()`
+→ Use `services.callBubbleWorkflow()`
 
 **"I need to know the response format of a Bubble workflow"**
 → Use skill: `workflow-discovery`
@@ -132,7 +132,7 @@ The tool:
 
 ## Common Patterns
 
-### Calling Bubble APIs
+### Calling Bubble Workflows
 
 ```typescript
 // In Component.tsx
@@ -140,9 +140,6 @@ const { services } = config;
 
 // Call a Bubble workflow
 const result = await services.callBubbleWorkflow('get_data', { user_id: '123' });
-
-// Call Bubble Data API
-const items = await services.callBubbleDataApi('/obj/items');
 
 // Call Next.js API
 const data = await services.callNextApi('/api/endpoint');

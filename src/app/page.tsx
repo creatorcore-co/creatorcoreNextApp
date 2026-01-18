@@ -22,12 +22,6 @@ export default function HomePage() {
       return { success: true, workflow: name, params };
     },
 
-    callBubbleDataApi: async (endpoint: string, options?: RequestInit) => {
-      console.log('Mock: callBubbleDataApi', endpoint, options);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      return { response: { results: [], count: 0 } };
-    },
-
     callNextApi: async (endpoint: string, options?: RequestInit) => {
       console.log('Mock: callNextApi', endpoint, options);
       // Make actual call to Next.js API in standalone mode
@@ -178,7 +172,6 @@ export default function HomePage() {
     },
     services: {
       callBubbleWorkflow: async (name, params) => { /* ... */ },
-      callBubbleDataApi: async (endpoint, options) => { /* ... */ },
       callNextApi: async (endpoint, options) => { /* ... */ },
       emitEvent: (name, payload) => { /* ... */ },
       getNextToken: () => localStorage.getItem('nextToken'),

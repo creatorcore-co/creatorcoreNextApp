@@ -1,6 +1,6 @@
 # CreatorCore Next.js
 
-A multi-interface Next.js application for building embeddable widgets for Bubble.io. Create isolated, production-ready React interfaces that integrate seamlessly with Bubble's workflow and data APIs.
+A multi-interface Next.js application for building embeddable widgets for Bubble.io. Create isolated, production-ready React interfaces that integrate seamlessly with Bubble's workflow APIs.
 
 ## Key Features
 
@@ -90,13 +90,13 @@ For API routes and server-side operations:
 
 ```typescript
 import { authenticateRequest, exchangeToken } from '@/lib/auth';
-import { callBubbleWorkflow, callBubbleDataApi } from '@/lib/bubble';
+import { callBubbleWorkflow } from '@/lib/bubble';
 ```
 
 | Module | Purpose |
 |--------|---------|
 | `auth.ts` | JWT verification, token creation, request authentication |
-| `bubble.ts` | Server-side Bubble API calls, data sanitization |
+| `bubble.ts` | Server-side Bubble workflow calls, data sanitization |
 
 ---
 
@@ -202,10 +202,6 @@ After deployment:
             body: JSON.stringify(params)
           }).then(r => r.json());
         },
-        callBubbleDataApi: async (endpoint, options) => {
-          return fetch(`YOUR_BUBBLE_BASE_URL/api/1.1${endpoint}`, options)
-            .then(r => r.json());
-        },
         callNextApi: async (endpoint, options) => {
           const token = localStorage.getItem('nextAccessToken');
           return fetch(`https://creatorcore-next-app.vercel.app${endpoint}`, {
@@ -300,7 +296,6 @@ interface Config {
   };
   services: {
     callBubbleWorkflow: (name: string, params?: object) => Promise<any>;
-    callBubbleDataApi: (endpoint: string, options?: RequestInit) => Promise<any>;
     callNextApi: (endpoint: string, options?: RequestInit) => Promise<any>;
     emitEvent: (name: string, payload?: object) => void;
     getNextToken: () => string | null;
