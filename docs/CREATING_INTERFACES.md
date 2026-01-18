@@ -78,9 +78,13 @@ The AI agent will work on these files:
 
 #### 2. Set Up Data Sources in Bubble
 
-For each group of data your interface needs, create a **Bubble backend workflow**:
+You have **two options** for defining the backend workflows your interface needs:
 
-**Example workflow setup:**
+##### Option A: Provide Existing Workflows
+
+If you've already created backend workflows in Bubble, document them in your prompt:
+
+**Example workflow documentation:**
 - **Workflow name**: `get_user_dashboard_data`
 - **Purpose**: Fetch user stats, recent activity, notifications
 - **Response format**:
@@ -103,6 +107,41 @@ For each group of data your interface needs, create a **Bubble backend workflow*
 - What data it returns
 - Expected parameters (if any)
 - Response structure
+
+##### Option B: Let AI Design Workflows
+
+If you don't have workflows set up yet, the AI agent can **design workflow specifications** for you. Simply describe what data and actions your interface needs, and the agent will provide:
+
+- **Workflow name and method** (GET/POST)
+- **Endpoint settings** (authentication, privacy rules, public access)
+- **Parameters** with types and descriptions
+- **Expected response format** with exact JSON structure
+- **Implementation notes** for building in Bubble
+
+**Example prompt:**
+```
+Build a campaign dashboard interface. I need to:
+- Display a list of campaigns with pagination
+- Show aggregate statistics (total campaigns, active count, total budget)
+- Allow updating campaign status
+
+I don't have the backend workflows set up yet - please design them for me.
+```
+
+The AI agent will provide complete workflow specifications that you can then create in Bubble. Once created, the agent can test them using the workflow discovery tool to verify they work correctly.
+
+##### Providing Bubble Data Schemas
+
+To help design accurate workflows, you can provide Bubble data type schemas. Use the **Bubble Plugin Tools** extension in Cursor:
+
+1. Open Cursor command palette
+2. Search for "Bubble Plugin Tools"
+3. Search for your data type (e.g., "campaign")
+4. Copy and share the schema
+
+The schema helps the agent understand your database structure and design workflows with correct field names.
+
+See the `workflow-design` skill in `.claude/skills/` for detailed workflow design patterns.
 
 #### 3. Identify Event Requirements
 

@@ -457,7 +457,30 @@ export const UserDashboardStyles = `
 `;
 ```
 
-## Step 3: Using the Services Object
+## Step 3: Prepare Backend Workflows
+
+Before building your interface, ensure the Bubble backend workflows are ready:
+
+### Option A: User Provides Workflow Specifications
+
+If the user has already created workflows in Bubble, use the workflow-discovery tool to get the exact response format:
+
+```bash
+npm run discover-workflow get_dashboard_data --body='{"user_id":"123"}'
+```
+
+### Option B: Design Workflows for User
+
+If the user hasn't set up backend workflows yet, design the specifications for them:
+
+1. Analyze the interface requirements to identify data and actions needed
+2. Design workflow specs with parameters and response formats
+3. Present the specs to the user to create in Bubble
+4. Once created, use workflow-discovery to verify they work
+
+See the [workflow-design skill](../workflow-design/SKILL.md) for detailed workflow design patterns.
+
+## Step 4: Using the Services Object
 
 The `services` object is provided by Bubble at mount time. Use it for ALL API calls:
 
@@ -490,7 +513,7 @@ const token = services.getNextToken();
 
 See the [bubble-integration skill](../bubble-integration/SKILL.md) for complete API reference.
 
-## Step 4: Emitting Events
+## Step 5: Emitting Events
 
 Use `onEmit` to notify Bubble of state changes:
 
@@ -517,7 +540,7 @@ Events are dispatched as DOM CustomEvents with format: `{interface-name}:{event-
 
 Example: `user-dashboard:item-selected`
 
-## Step 5: Build and Test
+## Step 6: Build and Test
 
 ### Build the interface
 

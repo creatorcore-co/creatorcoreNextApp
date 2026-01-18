@@ -265,9 +265,13 @@ document.addEventListener('my-interface:error', (e) => {
 });
 ```
 
-## Using the Workflow Discovery Tool
+## Workflow Setup
 
-Before building your interface, discover the exact response format of Bubble workflows:
+Before calling Bubble workflows from your interface, ensure the workflows exist:
+
+### If Workflows Already Exist
+
+Use the workflow discovery tool to get the exact response format:
 
 ```bash
 # Discover a workflow's response schema
@@ -281,6 +285,17 @@ npm run discover-workflow get_user_profile --save-registry
 ```
 
 See the [workflow-discovery skill](../workflow-discovery/SKILL.md) for detailed usage.
+
+### If Workflows Don't Exist Yet
+
+If the user hasn't provided backend workflow specifications, design the workflows first:
+
+1. Analyze the interface requirements to identify needed data and actions
+2. Design workflow specifications with parameters and response formats
+3. Present the specifications to the user to create in Bubble
+4. Once created, use workflow-discovery to verify they work correctly
+
+See the [workflow-design skill](../workflow-design/SKILL.md) for workflow specification patterns.
 
 ## Data Transformation Patterns
 

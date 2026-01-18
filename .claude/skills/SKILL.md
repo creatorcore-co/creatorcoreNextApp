@@ -85,6 +85,7 @@ creatorcoreNextApp/
 | Task | Skill | Key Command |
 |------|-------|-------------|
 | Create a new interface/widget | [create-interface](./create-interface/SKILL.md) | `npm run create-interface <name>` |
+| Design Bubble backend workflows | [workflow-design](./workflow-design/SKILL.md) | Suggest workflow specs |
 | Call Bubble APIs from interface | [bubble-integration](./bubble-integration/SKILL.md) | Use `services` object |
 | Discover Bubble workflow schemas | [workflow-discovery](./workflow-discovery/SKILL.md) | `npm run discover-workflow <name>` |
 | Implement authentication | [authentication](./authentication/SKILL.md) | `/api/auth/bubble-exchange` |
@@ -205,6 +206,9 @@ Building UI components with CSS-in-JS, Shadow DOM styling, state management, and
 
 ### [deployment](./deployment/SKILL.md)
 Build process, Vite configuration, Vercel deployment, and troubleshooting.
+
+### [workflow-design](./workflow-design/SKILL.md)
+Designing Bubble backend workflow specifications when users haven't provided them. Covers endpoint settings, parameters, response formats, pagination strategies, and presenting designs for user implementation.
 
 ### [workflow-discovery](./workflow-discovery/SKILL.md)
 Using the workflow discovery tool to inspect Bubble API response schemas and generate TypeScript types.

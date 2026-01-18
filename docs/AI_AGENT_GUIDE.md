@@ -12,6 +12,7 @@ This guide helps AI coding agents understand the CreatorCore system and navigate
 |-------|----------|-------------|
 | **creatorcore-nextjs** | `.claude/skills/SKILL.md` | Starting any task, need system overview |
 | **create-interface** | `.claude/skills/create-interface/SKILL.md` | Creating a new widget/interface |
+| **workflow-design** | `.claude/skills/workflow-design/SKILL.md` | Designing backend workflows for user to create |
 | **bubble-integration** | `.claude/skills/bubble-integration/SKILL.md` | Calling Bubble APIs, using services object |
 | **authentication** | `.claude/skills/authentication/SKILL.md` | Implementing JWT auth, securing endpoints |
 | **component-patterns** | `.claude/skills/component-patterns/SKILL.md` | Building UI components, styling |
@@ -27,6 +28,11 @@ This guide helps AI coding agents understand the CreatorCore system and navigate
 **"I need to create a new interface/widget"**
 → Use skill: `create-interface`
 → Command: `npm run create-interface <name>`
+
+**"User hasn't provided backend workflows for the interface"**
+→ Use skill: `workflow-design`
+→ Design workflow specifications for user to create in Bubble
+→ Then test with `workflow-discovery` after user creates them
 
 **"I need to call a Bubble workflow or API"**
 → Use skill: `bubble-integration`
@@ -219,5 +225,6 @@ useEffect(() => {
 
 - **System overview**: `.claude/skills/SKILL.md`
 - **Creating interfaces**: `.claude/skills/create-interface/SKILL.md`
+- **Designing workflows**: `.claude/skills/workflow-design/SKILL.md`
 - **Bubble integration**: `.claude/skills/bubble-integration/SKILL.md`
 - **Full documentation**: `docs/CREATING_INTERFACES.md`
