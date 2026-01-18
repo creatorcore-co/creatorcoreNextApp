@@ -198,11 +198,11 @@ export interface UserDashboardConfig {
   /** Service functions for API calls and events */
   services: BubbleServices;
 
-  /** Base URL for Next.js API calls */
-  nextApiBase: string;
+  /** Base URL for Vercel/Next.js API calls */
+  vercelBaseUrl: string;
 
-  /** Bubble app name */
-  bubbleAppName: string;
+  /** Base URL for Bubble app */
+  bubbleBaseUrl: string;
 
   /** Whether the user is authenticated */
   isAuthenticated: boolean;

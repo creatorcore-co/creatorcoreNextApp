@@ -284,8 +284,8 @@ Create a simple HTML file:
           getNextToken: () => null,
           isAuthenticated: () => false,
         },
-        nextApiBase: 'http://localhost:3000',
-        bubbleAppName: 'test',
+        vercelBaseUrl: 'http://localhost:3000',
+        bubbleBaseUrl: 'https://test.bubbleapps.io',
         isAuthenticated: false,
         debug: true,
       }

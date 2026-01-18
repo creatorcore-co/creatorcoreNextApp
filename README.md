@@ -217,8 +217,8 @@ After deployment:
         getNextToken: () => localStorage.getItem('nextAccessToken'),
         isAuthenticated: () => !!localStorage.getItem('nextAccessToken')
       },
-      nextApiBase: 'https://creatorcore-next-app.vercel.app',
-      bubbleAppName: 'your-bubble-app',
+      vercelBaseUrl: 'https://creatorcore-next-app.vercel.app',
+      bubbleBaseUrl: 'https://your-app.bubbleapps.io',
       isAuthenticated: false,
       debug: true
     }
@@ -306,8 +306,8 @@ interface Config {
     getNextToken: () => string | null;
     isAuthenticated: () => boolean;
   };
-  nextApiBase: string;
-  bubbleAppName: string;
+  vercelBaseUrl: string;
+  bubbleBaseUrl: string;
   isAuthenticated: boolean;
   debug?: boolean;
 }

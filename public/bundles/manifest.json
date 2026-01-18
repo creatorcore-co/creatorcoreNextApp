@@ -1,13 +1,13 @@
 {
   "version": "1.0.0",
-  "generatedAt": "2026-01-18T05:28:14.430Z",
+  "generatedAt": "2026-01-18T16:06:13.173Z",
   "sharedHash": "811d33bff7173af2cd623308e67c26021c67d126073d32879030236b5894036a",
   "bundles": {
     "widget": {
-      "sourceHash": "60b9d7ec983dee1b3a8607514a0a3c11689f6313ad2cb2b08fc2495051e4d67e",
+      "sourceHash": "877b03fce7678f3fca82699fb4c143b1326ae7f3fccad4576b7662bb66f8de3a",
       "bundleFile": "widget.js",
-      "bundleSize": 201768,
-      "builtAt": "2026-01-18T05:28:14.395Z"
+      "bundleSize": 201772,
+      "builtAt": "2026-01-18T16:06:13.142Z"
     }
   }
 }

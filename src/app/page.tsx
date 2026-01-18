@@ -63,8 +63,8 @@ export default function HomePage() {
   const demoConfig: WidgetConfig = {
     props: demoProps,
     services: mockServices,
-    nextApiBase: '',
-    bubbleAppName: 'demo-app',
+    vercelBaseUrl: '',
+    bubbleBaseUrl: 'https://demo-app.bubbleapps.io',
     isAuthenticated: false,
     debug: true,
   };
@@ -184,8 +184,8 @@ export default function HomePage() {
       getNextToken: () => localStorage.getItem('nextToken'),
       isAuthenticated: () => !!localStorage.getItem('nextToken')
     },
-    nextApiBase: 'https://creatorcore-next-app.vercel.app',
-    bubbleAppName: 'your-bubble-app',
+    vercelBaseUrl: 'https://creatorcore-next-app.vercel.app',
+    bubbleBaseUrl: 'https://your-app.bubbleapps.io',
     isAuthenticated: true,
     debug: false
   }

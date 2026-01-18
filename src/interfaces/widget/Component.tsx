@@ -211,7 +211,7 @@ export function Widget({ config, onEmit }: WidgetComponentProps) {
               {
                 isAuthenticated,
                 hasToken: services.getNextToken() !== null,
-                bubbleAppName: config.bubbleAppName,
+                bubbleBaseUrl: config.bubbleBaseUrl,
                 propsKeys: Object.keys(props),
               },
               null,

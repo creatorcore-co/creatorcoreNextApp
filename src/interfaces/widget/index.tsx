@@ -18,8 +18,8 @@ function mount(container: HTMLElement, config: WidgetConfig): WidgetAPI {
   });
 
   logger.info('Mounting widget with config:', {
-    nextApiBase: config.nextApiBase,
-    bubbleAppName: config.bubbleAppName,
+    vercelBaseUrl: config.vercelBaseUrl,
+    bubbleBaseUrl: config.bubbleBaseUrl,
     isAuthenticated: config.isAuthenticated,
     propsKeys: Object.keys(config.props),
   });

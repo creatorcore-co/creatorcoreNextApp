@@ -25,8 +25,8 @@ function mount(
   });
 
   logger.info('Mounting {{INTERFACE_NAME}} with config:', {
-    nextApiBase: config.nextApiBase,
-    bubbleAppName: config.bubbleAppName,
+    vercelBaseUrl: config.vercelBaseUrl,
+    bubbleBaseUrl: config.bubbleBaseUrl,
     isAuthenticated: config.isAuthenticated,
     propsKeys: Object.keys(config.props),
   });
