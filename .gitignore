@@ -43,5 +43,5 @@ next-env.d.ts
 *.swp
 *.swo
 
-# Widget build (keep widget.js in public for serving)
-# public/widget.js
+# Claude Code
+.claude/settings.local.json
